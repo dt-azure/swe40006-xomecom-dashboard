@@ -144,7 +144,6 @@
 .st-key-cp_toolbar [data-testid="stColumn"] { width: auto; min-width: 0; }
 .st-key-cp_toolbar button p { font-size: .76rem; white-space: nowrap; }
 .cp-freshness { color: #dce8e4; font-size: .72rem; font-weight: 550; white-space: nowrap; }
-.cp-freshness::before { content: "●"; color: #72daa9; margin-right: .35rem; }
 
 .st-key-cp_heading {
     margin-inline: calc(-1 * var(--cp-gutter));
@@ -301,10 +300,6 @@ div[class*="st-key-cp_panel_"][data-testid="stVerticalBlock"] {
 .cp-rank-row i { width: 8px; height: 8px; border-radius: 2px; }
 .cp-rank-row strong { color: var(--cp-text); }
 
-.cp-sla { display: grid; grid-template-columns: repeat(3, 1fr); gap: .45rem; }
-.cp-sla div { padding: .4rem .5rem; background: var(--cp-soft); border-radius: 6px; }
-.cp-sla span { display: block; font-size: .66rem; color: var(--cp-muted); }
-.cp-sla strong { font-size: .84rem; }
 
 .cp-demo-tag {
     display: inline-flex;
@@ -315,3 +310,59 @@ div[class*="st-key-cp_panel_"][data-testid="stVerticalBlock"] {
     letter-spacing: .06em;
 }
 .cp-demo-tag .cp-icon { background: #ffdbcb; color: var(--cp-warning); }
+
+/* Date-only velocity card. */
+.cp-velocity { --velocity-weekend: #a84400; }
+.cp-velocity-header,
+.cp-velocity-share-heading,
+.cp-velocity-legend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .45rem;
+}
+.cp-velocity-header h3 { margin: 0; }
+.cp-velocity-help { position: relative; flex: none; }
+.cp-velocity-help button { background: transparent; border: 0; padding: 0; border-radius: 6px; }
+.cp-velocity-help .cp-icon { width: 23px; height: 23px; background: transparent; }
+.cp-velocity-help [role="tooltip"] {
+    display: none;
+    position: absolute;
+    z-index: 2;
+    right: 0;
+    top: 100%;
+    width: min(12rem, 65vw);
+    padding: .55rem;
+    border-radius: 6px;
+    background: var(--cp-dark);
+    color: white;
+    font-size: .72rem;
+}
+.cp-velocity-help:hover [role="tooltip"],
+.cp-velocity-help:focus-within [role="tooltip"] { display: block; }
+.cp-velocity .cp-velocity-subtitle,
+.cp-velocity .cp-velocity-note { color: var(--cp-muted); font-size: .73rem; margin: .3rem 0 0; }
+.cp-velocity table { width: 100%; border-spacing: 0 .25rem; table-layout: fixed; margin: .5rem 0; }
+.cp-velocity th, .cp-velocity td { text-align: center; font-size: .74rem; padding: .15rem .3rem; }
+.cp-velocity th:first-child { width: 23%; text-align: left; }
+.cp-velocity th:nth-child(2) { width: 26%; }
+.cp-velocity .weekend { background: #edf4fd; }
+.cp-velocity .weekend th { color: var(--velocity-weekend); border-radius: 6px 0 0 6px; }
+.cp-velocity .weekend td:last-child { border-radius: 0 6px 6px 0; }
+.cp-velocity-cell { display: block; padding: .22rem .25rem; border-radius: 5px; font-weight: 750; }
+.cp-velocity-cell.low { background: #e6edf5; color: #233441; }
+.cp-velocity-cell.moderate { background: #69d6ab; color: #002113; }
+.cp-velocity-cell.high { background: #006947; color: white; }
+.cp-velocity-cell.surge { background: #ff8843; color: #341100; }
+.cp-velocity-cell.peak { background: var(--velocity-weekend); color: white; }
+.cp-velocity-share-heading { border-top: 1px solid var(--cp-elevated); padding-top: .65rem; font-size: .79rem; }
+.cp-velocity-share-heading strong:nth-child(2) { color: var(--velocity-weekend); }
+.cp-velocity-split { display: flex; height: .58rem; border-radius: 999px; overflow: hidden; margin: .45rem 0; }
+.cp-velocity .weekdays { --share-color: #006947; }
+.cp-velocity .weekends { --share-color: var(--velocity-weekend); }
+.cp-velocity-split span { background: var(--share-color); }
+.cp-velocity-legend { flex-wrap: wrap; font-size: .71rem; }
+.cp-velocity-legend span::before {
+    content: ""; display: inline-block; width: .5rem; height: .5rem; margin-right: .3rem;
+    border-radius: 50%; background: var(--share-color);
+}

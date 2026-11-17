@@ -1,73 +1,64 @@
 import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
 
 from dashboard.components import charts
-from dashboard.components.formatting import money, number, percent
+from dashboard.components.formatting import money, number
 from dashboard.components.layout import KPI, delta, kpis, page_heading, panel
 from dashboard.components.report import Report, run_view
 from dashboard.components.tables import download, table
-from dashboard.data.analytics import (
-    PERIODS, daily_sales, daypart_velocity, divide, order_metrics, period_trend, search_rows,
-)
+from dashboard.components.velocity import velocity_card
+from dashboard.data.analytics import PERIODS, daily_sales, period_trend, search_rows, totals
 
 
 def render(report: Report) -> pd.DataFrame:
-    page_heading("Sales Trend & Velocity", "Revenue, order volume and buying patterns over the selected period.")
-    orders = report.orders()
-    daily = daily_sales(orders, report.scope)
-    current = order_metrics(orders)
-    previous = order_metrics(report.orders(previous=True))
-    peak = daily.loc[daily["revenue_cents"].idxmax()]
+    currency = report.currency
+    page_heading("Sales Trend & Velocity", f"Net sales, order volume and weekday patterns · {currency}")
+    lines = report.lines()
+    daily = daily_sales(lines, report.scope)
+    if daily.empty:
+        st.info("No Gold sales lines match the selected dates and data scope.")
+        velocity_card(lines, currency)
+        return daily
+
+    current, previous = totals(lines), totals(report.lines(previous=True))
+    peak = daily.loc[daily["net_sales_cents"].idxmax()]
     kpis(
-        KPI("Period gross revenue", money(current["revenue"]), "payments",
-            *delta(current["revenue"], previous["revenue"], report.scope.comparison)),
+        KPI("Period net sales", money(current["net_sales_cents"], currency=currency), "payments",
+            *delta(current["net_sales_cents"], previous["net_sales_cents"], report.scope.comparison)),
         KPI("Total order count", number(current["orders"]), "shopping_cart_checkout",
             *delta(current["orders"], previous["orders"], report.scope.comparison)),
-        KPI("Peak daily revenue", money(peak["revenue_cents"]), "workspace_premium",
-            peak["date"].strftime("%b %d, %Y") if current["orders"] else "No sales in period"),
-        KPI("Revenue per order", money(current["aov"], 2), "point_of_sale",
-            *delta(current["aov"], previous["aov"], report.scope.comparison)),
+        KPI("Peak daily net sales", money(peak["net_sales_cents"], currency=currency), "workspace_premium",
+            peak["date"].strftime("%b %d, %Y")),
+        KPI("Net sales per order", money(current["aov_cents"], 2, currency=currency), "point_of_sale",
+            *delta(current["aov_cents"], previous["aov_cents"], report.scope.comparison)),
     )
-    if orders.empty:
-        st.info("No order activity is available for this date range.")
-        return daily.iloc[:0]
 
     left, right = st.columns([7, 4])
-    with left, panel("sales_revenue", "Revenue vs Order Count", "Merchandise revenue and non-cancelled orders"):
+    with left, panel("sales_revenue", "Net Sales vs Order Count", "Periods without sales appear as gaps."):
         granularity = st.segmented_control("Time grain", list(PERIODS), default="Daily",
                                            selection_mode="single", label_visibility="collapsed")
-        trend = period_trend(orders, report.scope, granularity or "Daily")
+        trend = period_trend(lines, report.scope, granularity or "Daily")
         fig = charts.dual_axis(
-            trend["date"], trend["revenue_cents"] / 100, trend["orders"], primary_name="Revenue (BRL)",
-            secondary_name="Order count", range_slider=True,
+            trend["date"], trend["net_sales_cents"] / 100, trend["orders"],
+            primary_name=f"Net sales ({currency})", secondary_name="Distinct orders",
+            left_prefix=f"{currency} ", range_slider=True,
         )
         charts.plot(fig, "sales_revenue", 335)
-    with right, panel("sales_velocity", "Weekday vs Weekend Velocity", "Average orders per day by local hour"):
-        velocity = daypart_velocity(orders, report.scope)
-        fig = go.Figure(go.Heatmap(
-            z=velocity, x=["06–11h", "11–16h", "16–21h", "21–06h"], y=velocity.index,
-            colorscale=[[0, "#edf4fd"], [.5, "#a6d9c6"], [1, charts.GREEN]], showscale=False,
-            texttemplate="%{z:.1f}", hovertemplate="%{y} · %{x}<br>%{z:.1f} orders/day<extra></extra>",
-            hoverongaps=False,
-        ))
-        fig.update_yaxes(autorange="reversed", showgrid=False)
-        fig.update_xaxes(showgrid=False, side="top")
-        charts.plot(fig, "sales_velocity", 280)
-        weekends = daily.loc[daily["date"].dt.dayofweek.ge(5), "revenue_cents"].sum()
-        st.caption(f"{percent(100 * divide(weekends, current['revenue']))} of revenue came from weekends.")
+    with right:
+        velocity_card(lines, currency)
 
-    with panel("sales_table", "Daily Sales Trend Breakdown", "Date-level orders, cancellations and fulfilment"):
+    with panel("sales_table", "Daily Sales Trend Breakdown", "Sales, discounts, profit and distinct order counts"):
         search, status = st.columns([2, 1])
         with search:
-            query = st.text_input("Search dates or weekdays", placeholder="e.g. 2024-08 or Friday")
+            query = st.text_input("Search dates or weekdays", placeholder="e.g. 2023-12 or Friday")
         with status:
-            velocity_filter = st.selectbox("Velocity status", ["All", "Surging", "Normal", "Quiet", "No sales"])
+            speed = st.selectbox("Velocity status", ["All", "Surging", "Normal", "Quiet"],
+                                 help="Surging exceeds 125% of median daily orders. Quiet is below 75%.")
         display = search_rows(daily.assign(weekday=daily["date"].dt.day_name()), query, ["date", "weekday"])
-        if velocity_filter != "All":
-            display = display.loc[display["velocity"].eq(velocity_filter)]
-        download(display, "sales")
-        table(display)
+        if speed != "All":
+            display = display.loc[display["velocity"].eq(speed)]
+        download(display, "sales", currency=currency)
+        table(display, currency=currency)
     return display
 
 

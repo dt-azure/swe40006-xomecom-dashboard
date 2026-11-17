@@ -1,74 +1,286 @@
-# CommercePulse
+# CommercePulse dashboard handover
 
-CommercePulse is the Streamlit reporting workstream for the SWE40006 E-Commerce Data Pipeline. It implements the six layouts in [the CommercePulse reference](../references/layout.html) with native Streamlit controls, interactive Plotly charts and filtered CSV reports. The default provider runs entirely from a synthetic snapshot.
+CommercePulse is the Streamlit and Plotly analytics application for the SWE40006 Xóm E-Com project. It turns PostgreSQL Gold sales data into reports for finance, growth, and retention. It offers exactly five pages in this order: **Overview → Sales Trend → Categories → Geography → Pipeline Health**.
 
-## Run locally
+Gold is the reporting contract. CommercePulse reads its published facts, dimensions, and marts without writing to the warehouse. Pipeline & Database owns ingestion, ETL, and the Gold schema. DevOps owns infrastructure, deployment, and operations. The dashboard workstream supplies the application, tests, documentation, and a runnable container definition.
 
-Run these commands from the repository root with Python 3.11–3.13. On Windows, activate the environment with `.venv\Scripts\Activate.ps1`.
+## Architecture
 
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r dashboard/requirements.txt
-streamlit run dashboard/app.py
+```mermaid
+flowchart LR
+    G[PostgreSQL Gold] --> P[PostgreSQL data provider]
+    P --> S[Normalized snapshot]
+    S --> A[Scoped analytics]
+    A --> V[Five Streamlit views]
+    V --> U[Plotly charts, tables, and CSV exports]
 ```
 
-Streamlit prints the local URL. Date and comparison settings carry between pages. The date range includes both dates. Business pages filter by order creation date, and Pipeline Health filters by execution start date in UTC. Previous period uses an equally long preceding window. Previous year shifts both endpoints back by one calendar year. Comparisons appear when the complete comparison window is available and the prior denominator is defined.
-
-Every page offers an **Export Report** CSV in the masthead. On Overview it contains the daily revenue and synthetic conversion series, regardless of the chart's grouping. On the other views it contains the filtered ledger rows, also available from **Download CSV**. Tables support column-header sorting in the browser. Downloads preserve the report's default ordering with the current query and filters.
-
-## Dashboard views
-
-| View | What you can explore |
+| Path | Responsibility |
 | --- | --- |
-| Overview | Five KPIs, revenue and conversion by period, top products, attributed channels, regional revenue and device performance |
-| Sales Trend | Daily through quarterly revenue and orders, weekday and weekend buying patterns, and a searchable daily ledger |
-| Categories | Department and product filters, category share and volume rankings, and order and SKU metrics |
-| Geography | Brazilian state tile map, metro rankings and a regional ledger with region and state filters |
-| Delivery & Reviews | Carrier and rating filters, transit time and review scores, variance and SLA distribution, and a shipment ledger |
-| Pipeline Health | Ingestion statistics, stage status, filtered run history and diagnostics for simulated success, warning and failure cases |
+| `dashboard/app.py` | Streamlit entry point. Registers the five views, renders the shared navigation and date toolbar, caches Gold reads, and passes the snapshot and filters to the active view. |
+| `dashboard/components/` | Shared navigation, filters, layout, number formatting, charts, velocity card, tables, CSV exports, and the per-view report context. |
+| `dashboard/data/provider.py` | Defines the provider protocol, normalized snapshot, and errors that the UI can display. |
+| `dashboard/data/postgres_provider.py` | Connects through SQLAlchemy and psycopg2, reads Gold in one repeatable-read transaction, validates types and keys, normalizes money to integer cents, and returns table counts and a read timestamp. |
+| `dashboard/data/analytics.py` | Applies the selected date range and Gold sample scope and computes sales, profitability, growth, velocity, and retention metrics. |
+| `dashboard/views/` | Builds and exports the five reports using the same snapshot and shared components. |
+| `dashboard/styles/` and `dashboard/static/fonts/` | CommercePulse styles and bundled fonts. Streamlit static serving is enabled in `.streamlit/config.toml`. |
+| `dashboard/tests/` | Unit and configuration checks plus a PostgreSQL and Streamlit integration test against the supplied snapshot. |
 
-## Demo data and definitions
+The provider reads the current fact and marts into memory. Normal interactions apply filters in the dashboard rather than issuing per-widget SQL queries. The current design was verified at the supplied snapshot size. Assess memory and query latency against production volume. If needed, move limiting and aggregation into the provider as a separate change.
 
-The mock provider generates its data once per Streamlit process and caches it. Seed `40006` generates orders and line items between January 2023 and August 15, 2024, plus 90 days of independent synthetic ETL runs. IDs, payment methods, locations, shipment dates and ratings are linked to the orders. The geography uses an Olist-inspired set of Brazilian cities, states and regions with synthetic demand. The state tile map is schematic. Currency is BRL, stored as integer cents and converted to decimal BRL for reporting. Bundled Inter and Plus Jakarta Sans fonts are distributed with their OFL notices under `static/fonts/`.
+## Repository structure
 
-- **Gross revenue** is merchandise value on non-cancelled orders. Freight is reported separately, and the recorded payment is merchandise plus freight. Cancelled order lines remain in the source snapshot for reconciliation and are excluded from sales aggregates.
-- **Orders and customers** count distinct order and customer IDs in the selected scope. A multi-category order contributes once per category it includes. Category revenue adds back to the overall total. Average order value divides merchandise value by non-cancelled orders.
-- **Fulfilment rate** is delivered orders divided by non-cancelled orders for the order-date cohort, measured as of the demo snapshot. Recent cohorts can still have orders in transit.
-- **Delivery duration** runs from dispatch to actual arrival. Variance is actual minus estimated arrival. Delayed means any positive variance. Early means more than 12 hours ahead of the estimate. The on-time KPI includes early deliveries. Unreviewed shipments contribute to delivery KPIs and are excluded from average review score.
-- **Conversion and channel attribution are provisional.** Demo site conversion divides synthetic checkout completions, including subsequently cancelled orders, by synthetic sessions. Product conversion uses separate SKU-level sessions and includes one conversion per ordered SKU per order. Channel and device revenue assigns each order to one synthetic channel and device. Device conversion uses the synthetic session data.
-- **Pipeline telemetry is simulated.** A run counts as successful only when its status is Success. Warning and Failed count as exceptions. Rows report writes to PostgreSQL Raw and can be nonzero after a downstream failure. The topology shows the latest run in scope and stage-level details for a selected run. Manual ingestion is disabled in demo.
+The tree shows files relevant to dashboard development and deployment. Package initializers and individual fonts and snapshot CSVs are grouped for readability.
 
-Inventory and returns need their own upstream data and are outside the current catalog metrics. Commerce dates are demo local dates using Brazil's São Paulo reporting clock. Pipeline timestamps are UTC.
+```text
+.
+├── .python-version                         # Python 3.12
+├── pyproject.toml                          # Python constraint and pytest settings
+├── .dockerignore                           # Docker build context exclusions
+├── .streamlit/config.toml                  # Runtime theme and static serving
+├── dashboard/
+│   ├── app.py                              # Runtime entry point
+│   ├── requirements.txt                    # Runtime dependencies
+│   ├── requirements-dev.txt                # Runtime dependencies plus pytest
+│   ├── README.md                           # Technical handover
+│   ├── GOLD_DATA_AUDIT.md                   # Gold contract and B1–B4 coverage
+│   ├── components/
+│   │   ├── charts.py, filters.py, formatting.py, layout.py
+│   │   └── navigation.py, report.py, tables.py, velocity.py
+│   ├── data/
+│   │   └── analytics.py, postgres_provider.py, provider.py
+│   ├── views/
+│   │   └── overview.py, sales.py, categories.py, geography.py, pipeline_health.py
+│   ├── static/fonts/
+│   ├── styles/theme.css
+│   └── tests/
+│       └── test_app.py, test_data.py
+├── dashboard_serve/
+│   ├── README.md                           # Development snapshot setup
+│   ├── schema.sql                          # Gold contract reference
+│   ├── requirements.txt                    # Separate loader/export dependencies
+│   ├── load_gold.py                        # Seeds or verifies an isolated development DB
+│   ├── export_gold.py                      # Pipeline-side snapshot export utility
+│   └── data/                               # Manifest and nine development CSVs
+├── deploy/
+│   ├── dashboard.Dockerfile                 # Dashboard container build
+│   └── DASHBOARD_HANDOFF.md                 # Deployment quick reference
+└── references/layout.html                  # Original design reference
+```
 
-## PostgreSQL integration
+The runtime is `dashboard/app.py` plus its Python packages and static assets. The test files and `dashboard_serve/` tooling are for development. Production data comes from PostgreSQL. The supplied Dockerfile packages dashboard runtime files and Streamlit configuration, and excludes the loader, tests, snapshot CSVs, and customer dimension records.
 
-`DASHBOARD_DATA_SOURCE` defaults to `mock`. To check the adapter's configuration path, set `DASHBOARD_DATA_SOURCE=postgres` and supply `DASHBOARD_DATABASE_URL` through your environment or deployment secret store. Use a SQLAlchemy `postgresql+psycopg2://` URL containing the database name. Omit credentials from source control.
+## Dashboard features
 
-The PostgreSQL adapter validates configuration and displays an actionable message until mart mappings are supplied. It currently performs no queries. The integration belongs in `data/postgres_provider.py`. The provider normalizes results to the `Snapshot` contract in `data/provider.py` so page code can continue to use the same analytics. Query the approved, read-only relations with bind parameters for filter values. Use bounded extracts or suitable aggregates as volume grows.
+All business pages use an inclusive order-date range and the Gold data selector. The default is **Historical only**. Users can include or isolate Gold rows marked `is_sample`; this switches the date selection to the latest available 90-day window for that scope. The comparison selector supports previous year, the immediately preceding period of equal length, or no comparison. A prior window needs to fall within the calendar bounds. Charts, ledgers, and report exports reflect their applicable filters. Table sorting happens in the browser. CSVs use the report's default row ordering.
 
-### Reporting contract and team handoff
+| Page | KPIs and visuals | Page controls and sources | Business requirements |
+| --- | --- | --- | --- |
+| **Overview** | Net sales, orders, known customers, average order value, profit, net sales and profit trend, top products, segment and market snapshots, profit by category, segment P&L, and a retention cohort heatmap. The customer activity section shows repeat purchases, observed lifetime sales, recency/frequency/monetary groups, and high-value inactivity when enough history is selected. | Daily, weekly or monthly trend; customer activity segment. Uses the sales fact, customer/product/region dimensions, quarterly segment P&L and customer retention marts. | B2 and B4. Also shows B1 loss-making orders by segment and B3 market context. |
+| **Sales Trend** | Period net sales, orders, peak day, sales per order, net sales and order count trend, distinct orders by weekday, weekday/weekend net sales share and a daily ledger. Periods without sales are gaps. | Daily, weekly, monthly or quarterly trend. Date/weekday search and velocity status filter apply to the ledger and its CSV. Uses the sales fact and its `order_date`. | Shared sales context for B1–B4. |
+| **Categories** | Active categories, top category by net sales, order volume and growth leader. Includes the net sales pie, volume versus net sales bubble chart, average line discount by category, profit and margin by discount band, and up to three profitable products per category. | Category selection and catalog search. Uses the fact, product dimension, and monthly discount mart at its published grain. Product-level searches hide the mart section. | B1, using observed transactions to compare discount and profitability. |
+| **Geography** | Top country, highest country AOV, customer growth leader, country coverage, market net sales treemap, top cities and a regional ledger. Detail reports include profitability, cross-region customers, and month-over-month and year-over-year growth. | Market and country filters, distribution metric, ledger search, profitability grouping and region for monthly growth. Uses the fact, region and customer dimensions, and the annual market growth mart. The market treemap is shown in the all-market net sales view. | B3. |
+| **Pipeline Health** | Readable Gold tables, total sales lines, sales lines in view, last successful dashboard read, order coverage, latest sales-line ingestion time, and a downloadable inventory. | Date range and sample scope affect the in-view count. Coverage and latest ingestion reflect the selected Gold data scope. Inventory counts are warehouse-wide. Uses the loaded snapshot and relation counts. | Operational context for B1–B4. |
 
-The names below are data frames in the dashboard contract. Ask the Pipeline & Database team for the real schema and relation names, join keys, grain, column types, nullability and representative records for each available feed.
+Gross sales are the Gold `sales` amount before discounts. Net sales, discounts and profit use their corresponding Gold amounts. Average order value divides net sales by distinct orders, and margin divides profit by net sales. Orders are distinct by `(source, is_sample, order_id)`. Known customer counts use distinct customer keys. Orders or customers can appear in multiple dimension groups, so grouped counts are not additive.
 
-| Frame | Grain | Fields and conventions |
+The marts keep their published grain and sample flag. The dashboard shows pre-aggregated rows only when their full recorded order-date coverage fits the selected window. Fact-based reports support partial date windows. Monthly geographic growth displays complete selected months and uses the same market, country, region, and sample scope for prior-period baselines.
+
+## Database contract
+
+Use a PostgreSQL database exposing the relations defined in [`dashboard_serve/schema.sql`](../dashboard_serve/schema.sql). All nine are read when the snapshot loads.
+
+| Required relation | Purpose and essential dependencies |
+| --- | --- |
+| `gold.fct_sales_lines` | Sales line fact. Unique text `sales_line_key`; text `source`, `order_id` and dimension keys; `order_date` as date; segment and discount-band labels; integer quantity; numeric sales, net sales, profit, discount amount and discount rate; Boolean `is_sample`; currency code; and `ingested_at` as a time zone-aware timestamp. |
+| `gold.dim_customer` | Joins `customer_key` and `is_unknown` for known-customer counts and retention. The app reads the key and flag and counts rows. Customer names and demographic attributes are outside the app query. |
+| `gold.dim_product` | Joins `product_key`, product name, category, subcategory and `is_unknown` for merchandising. |
+| `gold.dim_region` | Joins `region_key` to market, region, country, state and city for geography. |
+| `gold.dim_date` | Supplies minimum and maximum `date_day` for selectable dates. The calendar may extend past the latest sales line. |
+| `gold.mart_segment_pnl` | Published quarterly segment metrics. Quarter, segment, sample flag, counts, gross/net sales, discounts, profit, margin, loss-order counts, median order value and order coverage dates. |
+| `gold.mart_customer_retention` | Cohort month, elapsed months, sample flag, cohort and active customer counts, retention ratio, order count, sales, profit and order coverage dates. |
+| `gold.mart_discount_impact` | Monthly category and discount-band metrics. Sample flag, counts, average discount, gross/net sales, discounts, profit, margin, loss share and order coverage dates. |
+| `gold.mart_market_growth` | Annual market and region metrics. Sample flag, customer/order counts, net sales, previous year net sales, YoY change, profit, margin and order coverage dates. |
+
+The normalized fact requires non-null order keys, dates, sample flags, and currency. It expects a single uppercase three-letter currency code and non-null monetary values representable in whole cents. Unknown product and location labels are handled without dropping the associated amounts. Duplicate sales-line keys after the dimension joins are rejected.
+
+Provision the application role with **CONNECT** on the target database, **USAGE** on `gold`, and **SELECT** on the nine relations. The dashboard currently reads all columns from the four marts. Pipeline & Database and DevOps should make sure permissions survive any relation rebuilds. The runtime role needs no database or schema creation privileges and no data modification grants.
+
+Each load opens one **REPEATABLE READ, READ ONLY** transaction. It reads the fact and joins, date bounds, marts and table counts under a consistent snapshot. It sets the transaction time zone to UTC and an SQL statement timeout of 20 seconds. The connection timeout defaults to five seconds. The provider closes the connection and disposes its engine after the load. See [Data refresh and dynamic updates](#data-refresh-and-dynamic-updates) for when it reads again.
+
+## Data validation and reconciliation
+
+The 2026-11-17 development snapshot provides a reproducible historical baseline:
+
+| Check | Verified value |
+| --- | ---: |
+| Gold relations | 9 |
+| Rows across all relations | 105,673 |
+| Sales lines | 51,290 |
+| Distinct orders | 25,728 |
+| Order-date coverage | January 1, 2020 through December 31, 2023 |
+| Gross sales | $6,517,674.00 |
+| Net sales | $5,565,259.31 |
+| Profit | $1,065,413.58 |
+
+These are integration test expectations for that snapshot only. Runtime figures come from Gold and change as the warehouse changes. The snapshot labels the currency USD and the dashboard displays it accordingly. Confirmation from the data owner is pending. See the [full data audit](GOLD_DATA_AUDIT.md) for column types, null rates, joins and mart reconciliation.
+
+## Local development setup
+
+Use **Python 3.12**. The repository's `.python-version`, `pyproject.toml` constraint (`>=3.12,<3.13`), and Docker image agree. The Project Brief §3.1 specifies Python 3.11. The team should confirm 3.12 as the shared runtime or schedule a coordinated change.
+
+1. Use the supplied handover checkout or clone the shared `dashboard` branch once the handover changes are available there.
+
+   ```bash
+   git clone --branch dashboard --single-branch https://github.com/dt-azure/swe40006-xomecom-dashboard.git
+   cd swe40006-xomecom-dashboard
+   ```
+
+2. From the repository root, create and activate the virtual environment. Use a Python 3.12 distribution that provides `venv` and pip.
+
+   ```bash
+   python3.12 -m venv .venv
+   source .venv/bin/activate
+   python -m pip install -r dashboard/requirements.txt
+   ```
+
+3. Use an existing Gold database or follow the [development snapshot setup](../dashboard_serve/README.md) to load one into a separate local database. The loader has its own requirements and replaces the target `gold` schema. Use the dashboard's read-only connection for app verification. Replace the placeholders below with credentials valid for the target database.
+
+   ```bash
+   export DASHBOARD_DATABASE_URL='postgresql://dashboard_reader:URL_ENCODED_PASSWORD@127.0.0.1:5440/xom_gold'
+   ```
+
+4. Start Streamlit from the repository root and open [http://localhost:8501](http://localhost:8501). A populated Overview confirms that the app can query Gold.
+
+   ```bash
+   streamlit run dashboard/app.py
+   ```
+
+5. Stop Streamlit with **Ctrl+C** in its terminal. Run `deactivate` when finished with the virtual environment.
+
+## Environment variables and secrets
+
+`DASHBOARD_DATABASE_URL` is the runtime connection setting. It accepts `postgresql://` and `postgresql+psycopg2://` URLs with a database name. The provider uses psycopg2 for both formats. Percent-encode reserved characters in credentials. Supply the URL via a shell environment variable for development or inject it into the running container from the team's secret store. Keep actual credentials out of Git, Compose files, images, logs and shared terminal transcripts.
+
+| Where the app runs | PostgreSQL hostname and port |
+| --- | --- |
+| Host terminal, with the snapshot published locally | `127.0.0.1:5440` when configured as in the development setup. |
+| Docker Desktop, with a reachable snapshot exposed on the host | `host.docker.internal:5440` for the verified local setup. |
+| Dashboard and PostgreSQL containers sharing a Docker network | PostgreSQL service name and its internal port, usually `5432`. A dashboard container's loopback addresses the dashboard container itself. |
+| Test or production container connecting to managed PostgreSQL | Warehouse DNS name and configured port, reachable from the container's network. |
+
+Follow the warehouse's TLS policy for deployment. When certificate and hostname verification is required, use `sslmode=verify-full` and set `sslrootcert` to the CA file path inside the container. Mount the CA at that path. For example, append `?sslmode=verify-full&sslrootcert=/run/certs/warehouse-ca.pem` to the connection URL when that path is configured by DevOps.
+
+## Docker build and local verification
+
+Run the build from the repository root so `.` is the build context. The [Dockerfile](../deploy/dashboard.Dockerfile) uses `python:3.12-slim` and starts Streamlit as `commercepulse` (UID 10001) on container port `8501`.
+
+```bash
+docker build -f deploy/dashboard.Dockerfile -t commercepulse-dashboard .
+```
+
+Export `DASHBOARD_DATABASE_URL` with a hostname reachable from the container. If PostgreSQL is on the Docker daemon's default network or is reachable outside Docker, use the appropriate network endpoint. If using a user-defined shared network, attach the app with `--network NETWORK_NAME` and use the database service name in the URL.
+
+```bash
+docker run -d --rm --name commercepulse-dashboard \
+  -p 127.0.0.1:8501:8501 \
+  --env DASHBOARD_DATABASE_URL \
+  commercepulse-dashboard
+
+docker logs --follow commercepulse-dashboard
+```
+
+The host binding above is for local verification. Open [http://localhost:8501](http://localhost:8501), verify that Overview renders data, and check Pipeline Health for populated Gold inventory rows. Use **Ctrl+C** to leave the log stream and stop the container with:
+
+```bash
+docker stop commercepulse-dashboard
+```
+
+The build copies only dashboard runtime files and `.streamlit/config.toml`. Snapshot loading, Docker Compose wiring and publishing to a registry belong outside this image. The [deployment quick reference](../deploy/DASHBOARD_HANDOFF.md) summarizes the container contract.
+
+## Health checks
+
+| Check | What it verifies | How to check |
 | --- | --- | --- |
-| `orders` | One row per order | `order_id`, stable `customer_id`, `date`, `ordered_at`, normalized `status`, `city`, `state`, `region`, `revenue_cents`, `shipping_cents`, `payment_cents`, `payment_method`, `carrier`, `dispatched_at`, `estimated_at`, `delivered_at`, nullable `reviewed_at` and `review_score` (1–5), and publishable `review_note`. `channel` and `device` require tracking data. |
-| `items` | One row per order item | Unique `item_id`, `order_id`, `sku`, `product`, `category`, `department`, integer `quantity`, `unit_price_cents` and `revenue_cents`. Non-cancelled lines must reconcile with order merchandise revenue. |
-| `traffic` | One row per date, channel and device | `date`, `channel`, `device`, integer `sessions` and `conversions`. Requires a web analytics or attribution source. |
-| `product_traffic` | One row per date and SKU | `date`, `sku`, integer `sessions` and `conversions`. Requires SKU-level tracking. |
-| `runs` | One row per execution | `run_id`, UTC `started_at`, `target`, `status` (Success, Warning, Failed), `duration_seconds`, Raw rows written as `rows`, and publishable `diagnostic`. |
-| `stages` | One row per run and stage | `run_id`, `stage`, `status` (Success, Warning, Failed, Skipped), and `duration_seconds`. Map source steps to the six stages in the planned topology. |
+| Streamlit liveness | The app server answers HTTP. The Dockerfile checks this every 30 seconds after a startup grace period. | `curl --fail http://127.0.0.1:8501/_stcore/health` |
+| Database readiness | The deployed app can authenticate and read the Gold relations as its runtime role. | Open the deployed dashboard in a browser and verify that Overview shows data and Pipeline Health lists all required relations. This exercises the Streamlit session and WebSocket path. |
 
-Also confirm the reporting time zone and revenue recognition rules, including discounts, refunds, cancellations, freight and currency. Confirm the customer deduplication rules, shipment and review grain for multi-shipment orders, and the report's coverage and freshness watermark. Identify which optional acquisition and telemetry feeds will be available. For deployment, provide the read-only role, secret name, permitted network path and TLS settings. Use typed empty frames for unavailable optional feeds and expose that availability in the UI when the real adapter is implemented.
+HTTP 200 from `/_stcore/health` can occur even when database connectivity fails. Application readiness is verified through the dashboard. The service has no separate `/health` or `/version` endpoints.
 
-## Tests and deployment
+## Testing
+
+Run tests from the repository root with the development requirements installed. The root pytest configuration marks PostgreSQL tests as `integration`, and the dashboard tests live under `dashboard/tests/`.
 
 ```bash
 python -m pip install -r dashboard/requirements-dev.txt
-python -m pytest -q dashboard/tests
+python -m pytest -q -m 'not integration' dashboard/tests
 ```
 
-The tests exercise data reproducibility, metric reconciliation, delivery chronology, ETL outcomes, navigation, filters, diagnostics and provider configuration. Streamlit AppTest renders each page and checks the report download controls.
+To include the integration test, point it at an isolated PostgreSQL database seeded with the supplied 2026-11-17 fixture. Use separate production smoke tests to verify connectivity and report behavior against changing production data.
 
-For a container, copy `.streamlit/config.toml` and the `dashboard/` package, install its requirements and run the same entry point with `--server.address=0.0.0.0 --server.port=8501 --server.headless=true`. Route browser WebSocket upgrades alongside HTTP and use `/_stcore/health` for the container health check. Use the deployment's secret configuration for PostgreSQL connection settings. The runtime includes the fonts and uses no external analytics, maps, fonts or APIs in demo.
+```bash
+DASHBOARD_TEST_DATABASE_URL="$DASHBOARD_DATABASE_URL" python -m pytest -q dashboard/tests
+```
+
+Without `DASHBOARD_TEST_DATABASE_URL`, the integration test skips. Unit and configuration tests cover formulas, scope changes, empty data, signed or zero chart inputs, navigation order, and currency and CSV handling. The integration test checks the full historical reconciliation, renders all five views in Streamlit AppTest, and verifies the category pie, market treemap, weekday split, filters and exports.
+
+After the page removal, all **16 tests passed** under Python 3.12 against the local Gold snapshot. A Chrome smoke check rendered the five pages, verified that the old route falls back to Overview, and downloaded the inventory CSV at the test instance. The rebuilt non-root container passed HTTP liveness and rendered Overview with Gold data.
+
+## Data refresh and dynamic updates
+
+- Successful reads are cached in memory by connection URL for **30 seconds**, with up to two cached entries per app process. Within that window, interactions reuse the snapshot.
+- The dashboard has no automatic polling. A browser interaction or refresh after cache expiry triggers the next read. If new orders fall outside the current date filter or Gold data scope, adjust both to see them. A Gold data load under the same contract requires no dashboard code redeployment.
+- **Orders through** in the header is the latest order date for the selected Gold data scope, independent of the date range. **Latest sales-line ingestion** on Pipeline Health is the maximum Gold `ingested_at` for that scope.
+- **Warehouse checked** is the UTC time when the dashboard completed its successful Gold read. It can remain unchanged while that result is cached. It does not identify when the warehouse finished an ETL run.
+- The dashboard does not read `ops.pipeline_runs`. Pipeline run history, transform status, and operational staleness alerts need an agreed telemetry contract and a separate implementation.
+
+## DevOps Integration Checklist
+
+**Provided by Dashboard:** the five-page application, read-only provider, runtime dependencies, Dockerfile, liveness check, dashboard-specific tests and snapshot reconciliation, plus this runbook.
+
+**Receiving DevOps teammate:**
+
+- [ ] Build the dashboard image from the repository root with `deploy/dashboard.Dockerfile`. Integrate the build, versioning and registry publishing into the existing CI/CD workflow.
+- [ ] Add the image or build definition to the team's Docker Compose configuration. Connect the service to the network that reaches PostgreSQL and configure its DNS name, port, routes and access rules.
+- [ ] Inject `DASHBOARD_DATABASE_URL` at runtime from the secret store. Coordinate a SELECT-only role with Pipeline & Database and mount the required TLS assets.
+- [ ] Route the configured hostname and application ingress to container port `8501`, forward WebSocket upgrades and apply the team's access control and TLS policy.
+- [ ] Deploy to the test environment first. Check liveness, open Overview, navigate all five pages, change date and scope filters, and download a CSV. Confirm chart values reconcile to the test data.
+- [ ] Check database readiness with the deployed role. Verify the role's grants and confirm that the dashboard starts its read-only transaction. Inspect grants without attempting writes to the warehouse.
+- [ ] Confirm the intended audience can reach and use the app over the deployed ingress.
+- [ ] Monitor container liveness, app errors, database connectivity and latency. Coordinate warehouse run and freshness monitoring with Pipeline & Database once the telemetry contract is available.
+- [ ] Promote through the existing production approval workflow and preserve the team's tested rollback procedure and previous image version.
+
+## Known limitations and dependencies
+
+- The supplied data is historical through **December 31, 2023**. New records depend on the pipeline publishing to Gold. The data owner still needs to confirm the USD designation.
+- Gold provides order dates and warehouse ingestion timestamps. Sales Trend uses a weekday distribution and weekday/weekend net sales split. Hourly transaction analysis requires an order-time field.
+- Shipment and review analytics are outside the current dashboard scope, and Gold has no source records for either.
+- Discount analysis describes observed transactions. Causal discount impact requires a comparison design and additional data. Customer analysis shows observed lifetime sales, retention and inactivity. It has no predictive churn or lifetime-value model.
+- Pipeline Health reports data coverage and read metadata. Warehouse execution history and staleness monitoring need the operations feed and an agreed freshness policy.
+- Python 3.12 is the implemented runtime. The team needs to resolve its difference with the Project Brief's Python 3.11 target.
+- Production readiness depends on a working network path, TLS settings, and read-only access to all nine Gold relations.
+
+## Ownership and workstream boundaries
+
+| Dashboard | Pipeline & Database | DevOps |
+| --- | --- | --- |
+| Streamlit app, styling, charts, reports and CSVs | Gold schema, source ingestion and ETL transformations | CI/CD workflows, deployment automation and Docker Compose integration |
+| Read-only provider, metric definitions and dashboard reconciliation tests | Source data quality, warehouse reconciliation and Gold availability | EC2/RDS infrastructure, network rules, ingress, TLS and secrets |
+| Dashboard tests, documentation and container handoff artifact | Pipeline run logs, freshness contract and dynamic data loading | Operational monitoring, alerts, production approvals, releases and rollback |
+
+## Troubleshooting
+
+| Symptom | What to check |
+| --- | --- |
+| App requests `DASHBOARD_DATABASE_URL` | Export it in the shell launching Streamlit or inject it into the running container. Restart after changing the runtime environment. |
+| PostgreSQL connection is refused | Confirm the server is running and listening on the configured IP and port. For the local fixture, check the Docker port mapping and use `5440` from the host when that is the published port. |
+| Postgres works on the host but fails from Docker | Compare the configured host with the container's network. Use the PostgreSQL service name and internal port on a shared network, or the reachable warehouse DNS name for a remote service. |
+| Gold relation is missing | Check the database name and use the [schema reference](../dashboard_serve/schema.sql) to verify all nine relations. Seed an isolated development database if needed. Ask Pipeline & Database to publish production relations. |
+| Insufficient PostgreSQL permissions | Verify CONNECT, schema USAGE and SELECT on each relation using the actual runtime role. Check grants again after marts are rebuilt. |
+| Charts or marts are empty | Select historical rows for the supplied snapshot and choose dates in 2020–2023. Clear narrower page filters. For pre-aggregated marts, choose a range covering the complete order-date interval of the rows. |
+| New Gold rows are not visible | Wait for the 30-second cache to expire, then refresh or interact with the app. Check **Warehouse checked** and **Orders through**, and widen the current date range or change the sample scope as needed. |
+| Container is healthy but reports fail | Liveness only confirms HTTP. Check `docker logs commercepulse-dashboard`, run a Gold SELECT with the deployment role from the app's network, and verify secrets, TLS and the ingress WebSocket route. |
+
+## Final handover status
+
+The five-page dashboard, Gold integration, analytics, tests, deployment Dockerfile and documentation are ready for DevOps integration. Local verification covers Postgres-backed reconciliation, navigation, the retained visualizations and the container entry point. DevOps owns integration and promotion through test and production. Pipeline & Database owns warehouse availability and the remaining operational telemetry contract. Production deployment has not been verified.

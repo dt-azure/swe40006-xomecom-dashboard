@@ -1,118 +1,137 @@
 import pandas as pd
-import plotly.graph_objects as go
 import streamlit as st
 
 from dashboard.components import charts
 from dashboard.components.formatting import money, number, percent
 from dashboard.components.layout import KPI, kpis, page_heading, panel
 from dashboard.components.report import Report, run_view
-from dashboard.components.tables import download, table
-from dashboard.data.analytics import geography_breakdown, percent_change, search_rows
+from dashboard.components.tables import download, mart_table, table
+from dashboard.data.analytics import breakdown, cross_region_customers, monthly_growth, percent_change, sample_scope, search_rows
 
-# Schematic west-to-east/north-to-south positions for all Brazilian federative units.
-TILE_ROWS = [
-    [None, "RR", None, "AP", None, None, None, None, None],
-    [None, "AM", None, "PA", "MA", "PI", "CE", "RN", None],
-    ["AC", "RO", "MT", "TO", None, "BA", "PE", "PB", None],
-    [None, None, "MS", "GO", "DF", "MG", "SE", "AL", None],
-    [None, None, None, "PR", "SP", "RJ", "ES", None, None],
-    [None, None, None, "RS", "SC", None, None, None, None],
-]
-MEASURES = {"Revenue": "revenue_cents", "Orders": "orders", "Customers": "customers"}
+MEASURES = {"Net sales": "net_sales_cents", "Orders": "orders", "Customers": "customers"}
 
 
-def cartogram(states: pd.DataFrame, metric: str) -> go.Figure:
-    tiles = pd.DataFrame(
-        [(state, x, -y) for y, row in enumerate(TILE_ROWS) for x, state in enumerate(row) if state],
-        columns=["state", "x", "y"],
-    ).merge(states, on="state", how="left")
-    tiles["has_data"] = tiles[MEASURES[metric]].notna()
-    tiles["value"] = tiles[MEASURES[metric]] / 100 if metric == "Revenue" else tiles[MEASURES[metric]]
-    labels = [money(value, 2) if metric == "Revenue" else number(value) for value in tiles[MEASURES[metric]]]
-    tiles["hover"] = [f"{state} · {metric}: {label}" if has_data else f"{state} · Outside current scope"
-                      for state, label, has_data in zip(tiles["state"], labels, tiles["has_data"])]
-
-    fig = go.Figure()
-    for has_data, group in tiles.groupby("has_data"):
-        marker = dict(symbol="square", size=35, color="#e8eff7", line=dict(color="white", width=1))
-        text_color = "#3e4942"
-        if has_data:
-            marker.update(
-                color=group["value"], colorscale=[[0, "#b6e5d5"], [.5, "#55ae94"], [1, "#006947"]],
-                cmin=0, cmax=max(group["value"].max(), 1), showscale=True,
-                colorbar=dict(thickness=10, len=.75, tickprefix="R$ " if metric == "Revenue" else ""),
-            )
-            text_color = ["white" if value >= .70 * marker["cmax"] else "#102f27"
-                          for value in group["value"]]
-        fig.add_trace(go.Scatter(
-            x=group["x"], y=group["y"], text=group["state"], customdata=group["hover"],
-            mode="markers+text", marker=marker, textfont=dict(color=text_color, size=10),
-            hovertemplate="%{customdata}<extra></extra>", showlegend=False,
-        ))
-    fig.update_xaxes(visible=False, range=[-.65, 8.05], constrain="domain")
-    fig.update_yaxes(visible=False, range=[-5.6, .65], scaleanchor="x", scaleratio=1)
-    return fig
+def by_location(lines: pd.DataFrame, market: str, country: str) -> pd.DataFrame:
+    if market != "All markets":
+        lines = lines.loc[lines["market"].eq(market)]
+    if country != "All countries":
+        lines = lines.loc[lines["country"].eq(country)]
+    return lines
 
 
 def render(report: Report) -> pd.DataFrame:
-    page_heading("Geographic Distribution & Regional Sales", "Orders, customers and revenue across the Brazilian demo market.")
-    all_orders = report.snapshot.orders
-    region_slot, state_slot, metric_slot = st.columns([1, 1, 1.5])
-    with region_slot:
-        region = st.selectbox(
-            "Region", ["All regions", *sorted(all_orders["region"].unique())], key="geo_region",
-            on_change=lambda: st.session_state.update(geo_state="All states"),
+    currency = report.currency
+    page_heading("Geographic Distribution & Regional Sales", f"Gold markets, countries and cities · {currency}")
+    market_slot, country_slot, metric_slot = st.columns([1, 1, 1.5])
+    all_lines = report.snapshot.lines
+    with market_slot:
+        market = st.selectbox(
+            "Market", ["All markets", *sorted(all_lines["market"].unique())], key="geo_market",
+            on_change=lambda: st.session_state.pop("geo_country", None),
         )
-    eligible = all_orders if region == "All regions" else all_orders.loc[all_orders["region"].eq(region)]
-    with state_slot:
-        state = st.selectbox("State", ["All states", *sorted(eligible["state"].unique())], key="geo_state")
+    eligible = by_location(all_lines, market, "All countries")
+    with country_slot:
+        country = st.selectbox("Country", ["All countries", *sorted(eligible["country"].unique())], key="geo_country")
     with metric_slot:
-        metric = st.segmented_control("Map metric", list(MEASURES), default="Revenue", selection_mode="single")
-    locations = eligible if state == "All states" else eligible.loc[eligible["state"].eq(state)]
-    allowed_states = locations["state"].unique()
-    orders = report.orders()
-    orders = orders.loc[orders["state"].isin(allowed_states)]
-    states = geography_breakdown(orders, ["state"])
-    metros = geography_breakdown(orders, ["region", "state", "city"])
-    if states.empty:
+        metric = st.segmented_control("Distribution metric", list(MEASURES), default="Net sales",
+                                      selection_mode="single") or "Net sales"
+    lines = by_location(report.lines(), market, country)
+    countries = breakdown(lines, ["country"])
+    cities = breakdown(lines, ["market", "region", "country", "state", "city"])
+    if cities.empty:
         st.info("No sales match these dates and locations.")
-        return metros
+        return cities
 
-    previous = report.orders(previous=True)
-    previous = geography_breakdown(previous.loc[previous["state"].isin(allowed_states)], ["state"])
-    top = states.iloc[0]
-    high_aov = states.loc[states["aov_cents"].idxmax()]
-    growth = states.set_index("state")["customers"].pipe(percent_change, previous.set_index("state")["customers"])
-    best_growth = growth.dropna().nlargest(1)
+    previous = breakdown(by_location(report.lines(previous=True), market, country), ["country"])
+    known = countries.loc[countries["country"].ne("Unknown")]
+    top = known.iloc[0] if not known.empty else countries.iloc[0]
+    high_aov = known.loc[known["aov_cents"].idxmax()] if not known.empty else top
+    growth = known.set_index("country")["customers"].pipe(
+        percent_change, previous.set_index("country")["customers"],
+    ).dropna().nlargest(1)
     kpis(
-        KPI("Top performing state", top["state"], "location_on",
-            f"{money(top['revenue_cents'])} · {percent(top['share'])} of regional scope"),
-        KPI("Highest state AOV", money(high_aov["aov_cents"], 2), "price_check", high_aov["state"]),
-        KPI("Customer growth leader", best_growth.index[0] if not best_growth.empty else "—", "trending_up",
-            f"{best_growth.iloc[0]:+.1f}% vs {report.scope.comparison.lower()}" if not best_growth.empty else "Comparison unavailable"),
-        KPI("States with sales", number(len(states)), "hub", f"{len(metros)} active metro clusters"),
+        KPI("Top market country", top["country"], "location_on",
+            f"{money(top['net_sales_cents'], currency=currency)} · {percent(top['share'])} of scoped sales"),
+        KPI("Highest country AOV", money(high_aov["aov_cents"], 2, currency=currency), "price_check", high_aov["country"]),
+        KPI("Customer growth leader", growth.index[0] if not growth.empty else "—", "trending_up",
+            f"{growth.iloc[0]:+.1f}% vs {report.scope.comparison.lower()}" if not growth.empty else "Comparison unavailable"),
+        KPI("Countries with sales", number(len(known)), "hub",
+            f"{cities.loc[cities['city'].ne('Unknown')].shape[0]:,} known city groups"),
     )
 
-    spatial, ranking = st.columns([7, 5])
-    with spatial, panel("geography_distribution", f"Brazilian {metric or 'Revenue'} by State",
-                        "State tile map · schematic geography"):
-        charts.plot(cartogram(states, metric or "Revenue"), "geography_distribution", 341)
-    with ranking, panel("geography_metros", "Top Metro Clusters", "Ranked by merchandise revenue"):
-        top_metros = metros.head(10)
+    distribution, metro = st.columns([7, 5])
+    dimension = "country" if market != "All markets" else "market"
+    location_scope = countries if dimension == "country" else breakdown(lines, ["market"])
+    with distribution, panel("geography_distribution", f"{metric.title()} by {dimension.title()}"):
+        measure = MEASURES[metric]
+        if metric == "Net sales" and dimension == "market":
+            fig = charts.sales_composition(location_scope[dimension], location_scope[measure], currency, treemap=True)
+            if fig is None:
+                st.info("Sales share is unavailable when every market has zero net sales.")
+            elif location_scope[measure].lt(0).any():
+                st.caption("Negative net sales are shown on a signed scale.")
+        else:
+            ranked = location_scope.nlargest(15 if dimension == "country" else 12, measure)
+            values = ranked[measure] / 100 if metric == "Net sales" else ranked[measure]
+            prefix = f"{currency} " if metric == "Net sales" else ""
+            fmt = ",.2f" if metric == "Net sales" else ",.0f"
+            fig = charts.horizontal(ranked[dimension], values,
+                                    hover=f"%{{y}}<br>{prefix}%{{x:{fmt}}}<extra></extra>")
+            fig.update_xaxes(tickprefix=prefix)
+        if fig is not None:
+            charts.plot(fig, "geography_distribution", 331)
+    with metro, panel("geography_metros", "Top Cities", "Ranked by net sales"):
+        ranked = cities.loc[cities["city"].ne("Unknown")].head(10)
         fig = charts.horizontal(
-            top_metros["city"] + " · " + top_metros["state"], top_metros["revenue_cents"] / 100,
-            custom=top_metros["customers"],
-            hover="%{y}<br>R$ %{x:,.2f} · %{customdata:,} customers<extra></extra>", color=charts.MINT,
+            ranked["city"] + " · " + ranked["country"], ranked["net_sales_cents"] / 100,
+            custom=ranked["customers"], color=charts.MINT,
+            hover=f"%{{y}}<br>{currency} %{{x:,.2f}} · %{{customdata:,}} known customers<extra></extra>",
         )
-        fig.update_xaxes(tickprefix="R$ ")
-        charts.plot(fig, "geography_metros", 341)
+        fig.update_xaxes(tickprefix=f"{currency} ")
+        charts.plot(fig, "geography_metros", 313)
 
-    with panel("geography_ledger", "Regional Sales & Customer Breakdown", "Metro-level results for the selected locations"):
-        query = st.text_input("Search cities, states or regions", placeholder="e.g. São Paulo or SP")
-        display = search_rows(metros, query, ["region", "state", "city"])
-        download(display, "geography")
-        table(display)
+    with panel("geography_ledger", "Regional Sales & Customer Breakdown",
+               "Orders and customers may appear in more than one location group."):
+        query = st.text_input("Search locations", placeholder="City, state, country, region or market")
+        display = search_rows(cities, query, ["city", "state", "country", "region", "market"])
+        download(display, "geography", currency=currency)
+        table(display, currency=currency)
+    market_analysis(report, lines, market, country)
+    if country == "All countries" and not query:
+        growth_mart = report.mart("mart_market_growth")
+        if market != "All markets":
+            growth_mart = growth_mart.loc[growth_mart["market"].fillna("Unknown").eq(market)]
+        mart_table(report, "mart_market_growth", "Annual Market Growth", [
+            "order_year", "market", "region", "is_sample", "order_count", "customer_count",
+            "net_sales", "prev_year_net_sales", "net_sales_yoy_change", "profit", "profit_margin",
+            "first_order_date", "last_order_date",
+        ], growth_mart)
     return display
+
+
+def market_analysis(report: Report, lines: pd.DataFrame, market: str, country: str) -> None:
+    currency = report.currency
+    with st.expander("Regional Profitability & Monthly Growth"):
+        st.caption(f"{number(cross_region_customers(lines))} known customers purchased in multiple recorded "
+                   "market–region pairs within the selected filters.")
+        geography = st.segmented_control("Profitability grouping", ["Market", "Region", "Country"],
+                                         default="Region") or "Region"
+        groups = ["market", "region"] if geography == "Region" else [geography.lower()]
+        summary = breakdown(lines, groups)
+        if geography == "Country":
+            summary = summary.head(15)
+        values = summary[[*groups, "net_sales_cents", "profit_cents", "margin", "orders", "customers"]]
+        table(values, height=250, currency=currency)
+        download(values, "geography-profitability", currency=currency)
+        regions = sorted(lines["region"].unique())
+        region = st.selectbox("Region for monthly growth", ["All regions", *regions])
+        history = by_location(sample_scope(report.snapshot.lines, report.selection), market, country)
+        if region != "All regions":
+            history = history.loc[history["region"].eq(region)]
+        monthly = monthly_growth(history, report.scope)
+        st.caption("Monthly growth uses only complete calendar months inside the selected dates. "
+                   "Month-over-month and year-over-year changes require an observed comparison month.")
+        table(monthly[["date", "net_sales_cents", "prior_net_sales_cents", "growth", "yoy_growth_pct"]], height=225, currency=currency)
 
 
 if __name__ == "__main__":

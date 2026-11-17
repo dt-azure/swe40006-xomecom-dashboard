@@ -1,0 +1,19 @@
+[theme]
+base = "light"
+primaryColor = "#006947"
+backgroundColor = "#f6f9ff"
+secondaryBackgroundColor = "#edf4fd"
+textColor = "#151c22"
+
+[theme.sidebar]
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#edf4fd"
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
+
+[server]
+enableStaticServing = true

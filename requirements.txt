@@ -1,0 +1,13 @@
+# Source API
+flask>=3.1
+
+# Pipeline
+requests>=2.32
+psycopg2-binary>=2.9,<3
+
+# Dashboard
+streamlit>=1.52,<2
+plotly>=6,<7
+pandas>=2.2,<3
+numpy>=1.26,<3
+SQLAlchemy>=2,<3

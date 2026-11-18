@@ -10,7 +10,7 @@ from streamlit.testing.v1 import AppTest
 from dashboard.data.analytics import totals
 from dashboard.data.postgres_provider import PostgresProvider
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2] / "dashboard"
 VIEWS = (
     ("overview", "Executive Overview", 6),
     ("sales", "Sales Trend & Velocity", 1),

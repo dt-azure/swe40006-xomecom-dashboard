@@ -77,9 +77,7 @@ def ensure_database(url):
 def refuse_pipeline_warehouse(conn):
     found = [
         r[0]
-        for r in conn.execute(
-            "SELECT nspname FROM pg_namespace WHERE nspname = ANY(%s)", (list(PIPELINE_SCHEMAS),)
-        )
+        for r in conn.execute("SELECT nspname FROM pg_namespace WHERE nspname = ANY(%s)", (list(PIPELINE_SCHEMAS),))
     ]
     if found:
         raise LoadError(
@@ -126,10 +124,7 @@ def load(url, base=HERE, log=print):
         conn.execute("ANALYZE")
     for table, n in counts.items():
         log(f"  gold.{table}: {n:,} rows")
-    log(
-        f"loaded {len(counts)} tables, {sum(counts.values()):,} rows "
-        f"(snapshot exported {manifest['exported_at']})"
-    )
+    log(f"loaded {len(counts)} tables, {sum(counts.values()):,} rows (snapshot exported {manifest['exported_at']})")
     return counts
 
 
@@ -145,9 +140,7 @@ def check(url, base=HERE, log=print):
 
 
 def main():
-    ap = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--url", default=os.environ.get("GOLD_DATABASE_URL"), help="target database")
     ap.add_argument("--check", action="store_true", help="only compare the database with the files")
     args = ap.parse_args()

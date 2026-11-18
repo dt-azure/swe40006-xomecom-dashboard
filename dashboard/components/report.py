@@ -5,7 +5,7 @@ from typing import Callable
 import pandas as pd
 import streamlit as st
 
-from dashboard.data.analytics import DateScope, in_scope
+from dashboard.data.analytics import DateScope, in_scope, mart_in_scope, sample_scope
 from dashboard.data.provider import Snapshot
 
 from .tables import download
@@ -16,14 +16,18 @@ class Report:
     snapshot: Snapshot
     scope: DateScope
     prior: DateScope | None
+    selection: str
 
-    def orders(self, *, previous: bool = False) -> pd.DataFrame:
-        scope = self.prior if previous else self.scope
-        return in_scope(self.snapshot.orders, scope) if scope else self.snapshot.orders.iloc[:0]
+    @property
+    def currency(self) -> str:
+        return self.snapshot.currency
 
-    def traffic(self, *, previous: bool = False) -> pd.DataFrame:
+    def lines(self, *, previous: bool = False) -> pd.DataFrame:
         scope = self.prior if previous else self.scope
-        return in_scope(self.snapshot.traffic, scope) if scope else self.snapshot.traffic.iloc[:0]
+        return sample_scope(in_scope(self.snapshot.lines, scope), self.selection) if scope else self.snapshot.lines.iloc[:0]
+
+    def mart(self, name: str) -> pd.DataFrame:
+        return mart_in_scope(sample_scope(self.snapshot.marts[name], self.selection), self.scope)
 
 
 active_report: ContextVar[tuple[Report, st.delta_generator.DeltaGenerator]] = ContextVar("active_report")
@@ -32,5 +36,6 @@ active_report: ContextVar[tuple[Report, st.delta_generator.DeltaGenerator]] = Co
 def run_view(render: Callable[[Report], pd.DataFrame], name: str) -> None:
     report, export_slot = active_report.get()
     data = render(report)
-    with export_slot:
-        download(data, name, "Export Report")
+    if len(data.columns):
+        with export_slot:
+            download(data, name, "Export Report", currency=report.currency)

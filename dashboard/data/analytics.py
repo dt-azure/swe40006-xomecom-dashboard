@@ -1,16 +1,14 @@
-"""Filters and metric definitions shared across reports."""
+"""Metrics at the Gold sales-line grain and filters for the pre-aggregated marts."""
 from dataclasses import dataclass, replace
 from datetime import date, timedelta
+import unicodedata
 
 import numpy as np
 import pandas as pd
 
-from .provider import Snapshot
-
 PERIODS = {"Daily": "D", "Weekly": "W-MON", "Monthly": "MS", "Quarterly": "QS"}
-DAYPARTS = ["Morning", "Midday", "Evening", "Night"]
 WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-SLA_STATUSES = ["Early", "On time", "Delayed"]
+DATA_SCOPES = ("Historical only", "Include sample rows", "Sample only")
 
 
 @dataclass(frozen=True)
@@ -32,15 +30,24 @@ class DateScope:
 
 
 def in_scope(frame: pd.DataFrame, scope: DateScope, column: str = "date") -> pd.DataFrame:
-    start = pd.Timestamp(scope.start)
-    stop = pd.Timestamp(scope.end + timedelta(days=1))
-    return frame.loc[frame[column].ge(start) & frame[column].lt(stop)]
+    start, end = pd.Timestamp(scope.start), pd.Timestamp(scope.end + timedelta(days=1))
+    return frame.loc[frame[column].ge(start) & frame[column].lt(end)]
+
+
+def sample_scope(frame: pd.DataFrame, selection: str) -> pd.DataFrame:
+    if selection == "Include sample rows":
+        return frame
+    return frame.loc[frame["is_sample"].eq(selection == "Sample only")]
+
+
+def mart_in_scope(frame: pd.DataFrame, scope: DateScope) -> pd.DataFrame:
+    """Select rows whose reported order-date coverage is fully within the filter."""
+    start, end = pd.Timestamp(scope.start), pd.Timestamp(scope.end)
+    first, last = pd.to_datetime(frame["first_order_date"]), pd.to_datetime(frame["last_order_date"])
+    return frame.loc[first.ge(start) & last.le(end)]
 
 
 def search_rows(frame: pd.DataFrame, query: str, columns: list[str]) -> pd.DataFrame:
-    """Case-insensitive literal search supports accents and common report IDs."""
-    import unicodedata
-
     def normalize(value: str) -> str:
         return "".join(
             char for char in unicodedata.normalize("NFKD", value.casefold())
@@ -56,148 +63,164 @@ def search_rows(frame: pd.DataFrame, query: str, columns: list[str]) -> pd.DataF
     return frame.loc[match]
 
 
-def paid_orders(orders: pd.DataFrame) -> pd.DataFrame:
-    return orders.loc[orders["status"].ne("Cancelled")]
-
-
-def purchased_lines(snapshot: Snapshot, orders: pd.DataFrame) -> pd.DataFrame:
-    return snapshot.items.merge(paid_orders(orders)[["order_id", "date"]], on="order_id", validate="many_to_one")
-
-
 def divide(numerator, denominator):
-    """Return an undefined value for a missing denominator."""
     if isinstance(denominator, pd.Series):
         return numerator / denominator.where(denominator.ne(0))
     return numerator / denominator if denominator else np.nan
 
 
-def order_metrics(orders: pd.DataFrame) -> dict:
-    paid = paid_orders(orders)
-    revenue = paid["revenue_cents"].sum()
-    return {
-        "revenue": revenue,
-        "orders": len(paid),
-        "customers": paid["customer_id"].nunique(),
-        "aov": divide(revenue, len(paid)),
-    }
-
-
-def percent_change(current, previous) -> float:
+def percent_change(current, previous):
     return 100 * (divide(current, previous) - 1)
 
 
-def conversion_rate(data: pd.DataFrame) -> float:
-    return 100 * divide(data["conversions"].sum(), data["sessions"].sum())
-
-
-def traffic_metrics(data: pd.DataFrame, dimension: str) -> pd.DataFrame:
-    totals = data.groupby(dimension, as_index=False)[["conversions", "sessions"]].sum()
-    totals["conversion"] = 100 * divide(totals["conversions"], totals["sessions"])
-    return totals
-
-
-def period_trend(
-    orders: pd.DataFrame, scope: DateScope, granularity: str, traffic: pd.DataFrame | None = None,
-) -> pd.DataFrame:
-    paid = paid_orders(orders)
-    index = pd.date_range(scope.start, scope.end, freq="D")
-    trend = paid.groupby("date").agg(revenue_cents=("revenue_cents", "sum"), orders=("order_id", "size"))
-    trend = trend.reindex(index, fill_value=0)
-    if traffic is not None:
-        trend = trend.join(traffic.groupby("date")[["conversions", "sessions"]].sum()).fillna(0)
-    trend = trend.resample(PERIODS[granularity], label="left", closed="left").sum()
-    if traffic is not None:
-        trend["conversion"] = 100 * divide(trend["conversions"], trend["sessions"])
-    return trend.rename_axis("date").reset_index()
-
-
-def daily_sales(orders: pd.DataFrame, scope: DateScope) -> pd.DataFrame:
-    daily = period_trend(orders, scope, "Daily").set_index("date")
-    daily["cancelled"] = orders.loc[orders["status"].eq("Cancelled")].groupby("date").size()
-    daily["cancelled"] = daily["cancelled"].fillna(0).astype(int)
-    delivered = orders.loc[orders["status"].eq("Delivered")].groupby("date").size()
-    daily["fulfilment"] = 100 * divide(delivered.reindex(daily.index, fill_value=0), daily["orders"])
-    daily["aov_cents"] = divide(daily["revenue_cents"], daily["orders"])
-    median = daily.loc[daily["orders"].gt(0), "orders"].median()
-    daily["velocity"] = np.select(
-        [daily["orders"].eq(0), daily["orders"].gt(1.25 * median), daily["orders"].lt(.75 * median)],
-        ["No sales", "Surging", "Quiet"],
-        default="Normal",
-    )
-    return daily.sort_index(ascending=False).reset_index()
-
-
-def daypart_velocity(orders: pd.DataFrame, scope: DateScope) -> pd.DataFrame:
-    paid = paid_orders(orders)
-    hours = paid["ordered_at"].dt.hour
-    dayparts = np.select(
-        [hours.between(6, 10), hours.between(11, 15), hours.between(16, 20)],
-        DAYPARTS[:3], default="Night"
-    )
-    count = pd.crosstab(paid["date"].dt.dayofweek, dayparts).reindex(
-        index=range(7), columns=DAYPARTS, fill_value=0
-    )
-    dates = pd.date_range(scope.start, scope.end)
-    days_per_weekday = pd.Series(dates.dayofweek).value_counts().reindex(range(7), fill_value=0)
-    return count.div(days_per_weekday.replace(0, np.nan), axis=0).set_axis(WEEKDAYS)
-
-
-def catalog_breakdown(lines: pd.DataFrame) -> pd.DataFrame:
-    result = lines.groupby(["department", "category"], as_index=False).agg(
-        revenue_cents=("revenue_cents", "sum"), orders=("order_id", "nunique"),
-        units=("quantity", "sum"), active_skus=("sku", "nunique"),
-    )
-    result["share"] = 100 * divide(result["revenue_cents"], result["revenue_cents"].sum())
-    result["basket_depth"] = divide(result["units"], result["orders"])
-    return result.sort_values("revenue_cents", ascending=False)
-
-
-def shipments(orders: pd.DataFrame) -> pd.DataFrame:
-    result = orders.loc[orders["delivered_at"].notna()].copy()
-    hours = result["delivered_at"] - result["estimated_at"]
-    result["variance_hours"] = hours.dt.total_seconds() / 3600
-    result["transit_days"] = (result["delivered_at"] - result["dispatched_at"]).dt.total_seconds() / 86400
-    result["sla_status"] = np.select(
-        [result["variance_hours"].gt(0), result["variance_hours"].lt(-12)],
-        ["Delayed", "Early"], default="On time"
-    )
-    return result
-
-
-def on_time_rate(deliveries: pd.DataFrame) -> float:
-    return 100 * divide(deliveries["variance_hours"].le(0).sum(), len(deliveries))
-
-
-def geography_breakdown(orders: pd.DataFrame, by: list[str]) -> pd.DataFrame:
-    paid = paid_orders(orders).copy()
-    paid["delivery_late"] = (paid["delivered_at"] > paid["estimated_at"]).astype(float)
-    paid.loc[paid["delivered_at"].isna(), "delivery_late"] = np.nan
-    result = paid.groupby(by, as_index=False).agg(
-        customers=("customer_id", "nunique"), orders=("order_id", "size"),
-        revenue_cents=("revenue_cents", "sum"), ship_cost_cents=("shipping_cents", "mean"),
-        late_rate=("delivery_late", "mean"),
-    )
-    result["share"] = 100 * divide(result["revenue_cents"], result["revenue_cents"].sum())
-    result["aov_cents"] = divide(result["revenue_cents"], result["orders"])
-    result["on_time_rate"] = 100 * (1 - result.pop("late_rate"))
-    return result.sort_values("revenue_cents", ascending=False)
-
-
-def pipeline_metrics(runs: pd.DataFrame, end: date) -> dict:
-    last_day = runs.loc[runs["started_at"].dt.date.eq(end)]
+def totals(lines: pd.DataFrame) -> dict:
+    orders = lines["order_key"].nunique()
+    net_sales = lines["net_sales_cents"].sum()
+    profit = lines["profit_cents"].sum()
     return {
-        "success_rate": 100 * divide(runs["status"].eq("Success").sum(), len(runs)),
-        "rows_last_day": last_day["rows"].sum(),
-        "run_count_last_day": len(last_day),
-        "average_duration": runs["duration_seconds"].mean(),
-        "p95_duration": runs["duration_seconds"].quantile(.95),
-        "exceptions": runs["status"].ne("Success").sum(),
+        "sales_cents": lines["sales_cents"].sum(),
+        "net_sales_cents": net_sales,
+        "profit_cents": profit,
+        "orders": orders,
+        "customers": lines["customer_key"].nunique(),
+        "aov_cents": divide(net_sales, orders),
+        "margin": 100 * divide(profit, net_sales),
     }
 
 
-def currency_columns(frame: pd.DataFrame) -> pd.DataFrame:
-    """Export currency in BRL while retaining exact cents during aggregation."""
+def breakdown(lines: pd.DataFrame, by: list[str]) -> pd.DataFrame:
+    result = lines.groupby(by, as_index=False, dropna=False).agg(
+        sales_cents=("sales_cents", "sum"), net_sales_cents=("net_sales_cents", "sum"),
+        profit_cents=("profit_cents", "sum"), discount_amount_cents=("discount_amount_cents", "sum"),
+        orders=("order_key", "nunique"), customers=("customer_key", "nunique"),
+        units=("quantity", "sum"), active_skus=("sku", "nunique"),
+    )
+    result["share"] = 100 * divide(result["net_sales_cents"], result["net_sales_cents"].sum())
+    result["basket_depth"] = divide(result["units"], result["orders"])
+    result["aov_cents"] = divide(result["net_sales_cents"], result["orders"])
+    result["margin"] = 100 * divide(result["profit_cents"], result["net_sales_cents"])
+    return result.sort_values("net_sales_cents", ascending=False)
+
+
+def period_trend(lines: pd.DataFrame, scope: DateScope, granularity: str) -> pd.DataFrame:
+    freq = PERIODS[granularity]
+    amounts = ["sales_cents", "net_sales_cents", "profit_cents", "discount_amount_cents", "quantity"]
+    periods = lines.groupby(pd.Grouper(key="date", freq=freq, label="left", closed="left"))
+    trend = periods[amounts].sum(min_count=1)
+    trend["orders"] = periods["order_key"].nunique().where(trend["net_sales_cents"].notna())
+    # Resampling supplies the enclosing bucket on both sides of partial periods.
+    days = pd.date_range(scope.start, scope.end, freq="D")
+    buckets = pd.Series(0, index=days).resample(freq, label="left", closed="left").size().index
+    trend = trend.reindex(buckets).rename_axis("date")
+    trend["aov_cents"] = divide(trend["net_sales_cents"], trend["orders"])
+    trend["margin"] = 100 * divide(trend["profit_cents"], trend["net_sales_cents"])
+    return trend.reset_index()
+
+
+def daily_sales(lines: pd.DataFrame, scope: DateScope) -> pd.DataFrame:
+    daily = period_trend(lines, scope, "Daily").dropna(subset=["orders"]).copy()
+    median = daily["orders"].median()
+    daily["velocity"] = np.select(
+        [daily["orders"].gt(1.25 * median), daily["orders"].lt(.75 * median)],
+        ["Surging", "Quiet"], default="Normal",
+    )
+    return daily.sort_values("date", ascending=False)
+
+
+def weekday_velocity(lines: pd.DataFrame) -> pd.DataFrame:
+    """Attribute distinct orders to their earliest order date in the selected lines."""
+    orders = lines.groupby("order_key")["date"].min()
+    counts = orders.dt.dayofweek.value_counts().reindex(range(7), fill_value=0)
+    return pd.DataFrame({"orders": counts, "share": 100 * divide(counts, len(orders))}).set_axis(WEEKDAYS)
+
+
+def weekday_sales_split(lines: pd.DataFrame) -> tuple[int, int]:
+    weekend = lines["date"].dt.dayofweek.ge(5)
+    return int(lines.loc[~weekend, "net_sales_cents"].sum()), int(lines.loc[weekend, "net_sales_cents"].sum())
+
+
+def currency_columns(frame: pd.DataFrame, currency: str = "USD") -> pd.DataFrame:
     money = [column for column in frame if column.endswith("_cents")]
     result = frame.copy()
     result[money] = result[money].div(100).round(2)
-    return result.rename(columns={column: column.removesuffix("_cents") + "_brl" for column in money})
+    return result.rename(columns={column: column.removesuffix("_cents") + f"_{currency.lower()}" for column in money})
+
+
+def discount_performance(lines: pd.DataFrame) -> pd.DataFrame:
+    """Observed discount behavior by category and Gold discount band."""
+    result = breakdown(lines, ["category", "discount_band"])
+    mean_discount = lines.groupby(["category", "discount_band"], as_index=False)["discount"].mean()
+    mean_discount["avg_discount_pct"] = mean_discount.pop("discount") * 100
+    return result.merge(mean_discount, on=["category", "discount_band"], validate="one_to_one")
+
+
+def top_profitable_products(lines: pd.DataFrame) -> pd.DataFrame:
+    products = breakdown(lines.dropna(subset=["sku"]), ["category", "sku", "product"])
+    ranked = products.loc[products["profit_cents"].gt(0)].sort_values(
+        ["category", "profit_cents", "sku"], ascending=[True, False, True],
+    )
+    return ranked.groupby("category", sort=False).head(3)
+
+
+def segment_performance(lines: pd.DataFrame) -> pd.DataFrame:
+    result = breakdown(lines, ["segment"])
+    result["gross_share_pct"] = 100 * divide(result["sales_cents"], result["sales_cents"].sum())
+    order_profit = lines.groupby(["segment", "order_key"])["profit_cents"].sum()
+    losses = order_profit.lt(0).groupby(level="segment").sum()
+    result["loss_orders"] = result["segment"].map(losses)
+    return result
+
+
+def customer_activity(lines: pd.DataFrame) -> pd.DataFrame:
+    known = lines.dropna(subset=["customer_key"])
+    result = known.groupby("customer_key").agg(
+        last_order=("date", "max"), orders=("order_key", "nunique"),
+        net_sales_cents=("net_sales_cents", "sum"),
+    )
+    result["recency_days"] = (lines["date"].max() - result["last_order"]).dt.days
+    return result
+
+
+def observed_customer_value(history: pd.DataFrame, customers: pd.Index, through: pd.Timestamp) -> float:
+    """Mean recorded net sales through the observation date for the selected customers."""
+    selected = history["customer_key"].isin(customers) & history["date"].le(through)
+    return divide(history.loc[selected, "net_sales_cents"].sum(), len(customers))
+
+
+def retention_by_segment(lines: pd.DataFrame) -> pd.DataFrame:
+    known = lines.dropna(subset=["customer_key"])
+    orders = known.groupby(["segment", "customer_key"])["order_key"].nunique()
+    rates = orders.gt(1).groupby(level="segment").agg(customers="size", repeat_customers="sum").reset_index()
+    rates["repeat_rate_pct"] = 100 * divide(rates["repeat_customers"], rates["customers"])
+    return rates
+
+
+def rfm_segments(activity: pd.DataFrame) -> pd.DataFrame:
+    classified = activity.assign(
+        recency=pd.cut(activity["recency_days"], [-1, 90, 180, np.inf],
+                       labels=["0–90 days", "91–180 days", "181+ days"]),
+        frequency=np.where(activity["orders"].ge(2), "Repeat", "One order"),
+        value=np.where(activity["net_sales_cents"].ge(activity["net_sales_cents"].quantile(.75)),
+                       "Upper quartile", "Below upper quartile"),
+    )
+    return classified.groupby(["recency", "frequency", "value"], observed=True, as_index=False).agg(
+        customers=("orders", "size"), net_sales_cents=("net_sales_cents", "sum"),
+    )
+
+
+def cross_region_customers(lines: pd.DataFrame) -> int:
+    known = lines.loc[lines["market"].ne("Unknown") & lines["region"].ne("Unknown")]
+    locations = known[["customer_key", "market", "region"]].drop_duplicates()
+    return int(locations.groupby("customer_key").size().gt(1).sum())
+
+
+def monthly_growth(lines: pd.DataFrame, scope: DateScope) -> pd.DataFrame:
+    start = pd.Timestamp(scope.start).replace(day=1)
+    history = replace(scope, start=(start - pd.DateOffset(years=1)).date())
+    monthly = period_trend(in_scope(lines, history), history, "Monthly")
+    monthly["prior_net_sales_cents"] = monthly["net_sales_cents"].shift()
+    monthly["growth"] = percent_change(monthly["net_sales_cents"], monthly["prior_net_sales_cents"])
+    monthly["yoy_growth_pct"] = percent_change(monthly["net_sales_cents"], monthly["net_sales_cents"].shift(12))
+    ends = monthly["date"] + pd.offsets.MonthEnd()
+    complete = monthly["date"].ge(pd.Timestamp(scope.start)) & ends.le(pd.Timestamp(scope.end))
+    return monthly.loc[complete].dropna(subset=["net_sales_cents"])

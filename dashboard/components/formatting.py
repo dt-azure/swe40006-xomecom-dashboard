@@ -1,8 +1,9 @@
 import pandas as pd
 
 
-def money(cents, decimals: int = 0) -> str:
-    return f"R$ {cents / 100:,.{decimals}f}" if pd.notna(cents) else "—"
+def money(cents, decimals: int = 0, *, currency: str = "USD") -> str:
+    prefix = "$" if currency == "USD" else f"{currency} "
+    return f"{prefix}{cents / 100:,.{decimals}f}" if pd.notna(cents) else "—"
 
 
 def number(value, decimals: int = 0, suffix: str = "") -> str:

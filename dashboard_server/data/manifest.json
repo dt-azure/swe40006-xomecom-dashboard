@@ -1,0 +1,666 @@
+{
+  "exported_at": "2026-11-17T08:58:05+00:00",
+  "exported_from": "xom",
+  "last_successful_transform": {
+    "run_id": 104,
+    "finished_at": "2026-11-17T06:25:17.246036+00:00",
+    "bronze_watermark": "2026-11-17T06:25:00.532370+00:00"
+  },
+  "fct_sales_lines_order_dates": {
+    "first": "2020-01-01",
+    "last": "2023-12-31",
+    "sample_rows": 0
+  },
+  "csv": {
+    "format": "csv",
+    "header": true,
+    "null": "empty unquoted field",
+    "encoding": "utf-8"
+  },
+  "tables": [
+    {
+      "table": "dim_customer",
+      "file": "data/dim_customer.csv",
+      "rows": 17416,
+      "sha256": "d4145a35e4a3eb5c7319e563eabf7cb5f76358a65c0d65251b7ff4d9941d5656",
+      "columns": [
+        {
+          "name": "customer_key",
+          "type": "text"
+        },
+        {
+          "name": "source",
+          "type": "text"
+        },
+        {
+          "name": "customer_id",
+          "type": "text"
+        },
+        {
+          "name": "customer_name",
+          "type": "text"
+        },
+        {
+          "name": "gender",
+          "type": "text"
+        },
+        {
+          "name": "marital_status",
+          "type": "text"
+        },
+        {
+          "name": "birth_year",
+          "type": "integer"
+        },
+        {
+          "name": "annual_income",
+          "type": "integer"
+        },
+        {
+          "name": "education_level",
+          "type": "text"
+        },
+        {
+          "name": "occupation",
+          "type": "text"
+        },
+        {
+          "name": "home_owner",
+          "type": "text"
+        },
+        {
+          "name": "is_sample",
+          "type": "boolean"
+        },
+        {
+          "name": "is_unknown",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "table": "dim_date",
+      "file": "data/dim_date.csv",
+      "rows": 2513,
+      "sha256": "f58820006a97a8f6095a846601266a2ca1eaba2ad3be20ae3e545dd4614a884c",
+      "columns": [
+        {
+          "name": "date_day",
+          "type": "date"
+        },
+        {
+          "name": "year",
+          "type": "integer"
+        },
+        {
+          "name": "quarter",
+          "type": "integer"
+        },
+        {
+          "name": "month",
+          "type": "integer"
+        },
+        {
+          "name": "month_name",
+          "type": "text"
+        },
+        {
+          "name": "iso_day_of_week",
+          "type": "integer"
+        },
+        {
+          "name": "day_name",
+          "type": "text"
+        },
+        {
+          "name": "is_weekend",
+          "type": "boolean"
+        },
+        {
+          "name": "month_start",
+          "type": "date"
+        },
+        {
+          "name": "quarter_start",
+          "type": "date"
+        },
+        {
+          "name": "year_start",
+          "type": "date"
+        },
+        {
+          "name": "quarter_label",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "table": "dim_product",
+      "file": "data/dim_product.csv",
+      "rows": 28357,
+      "sha256": "aaa1fca5d21a438ba8a00fddfbe1594b5cc37d8a8cf95e59bb2fb1869990d7fd",
+      "columns": [
+        {
+          "name": "product_key",
+          "type": "text"
+        },
+        {
+          "name": "source",
+          "type": "text"
+        },
+        {
+          "name": "product_code",
+          "type": "text"
+        },
+        {
+          "name": "product_name",
+          "type": "text"
+        },
+        {
+          "name": "category",
+          "type": "text"
+        },
+        {
+          "name": "subcategory",
+          "type": "text"
+        },
+        {
+          "name": "is_sample",
+          "type": "boolean"
+        },
+        {
+          "name": "is_unknown",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "table": "dim_region",
+      "file": "data/dim_region.csv",
+      "rows": 3829,
+      "sha256": "62d78e514f8321a1d970c1261eff2bb25236b5d8928149c0546da4859f8628ae",
+      "columns": [
+        {
+          "name": "region_key",
+          "type": "text"
+        },
+        {
+          "name": "source",
+          "type": "text"
+        },
+        {
+          "name": "region_code",
+          "type": "text"
+        },
+        {
+          "name": "city",
+          "type": "text"
+        },
+        {
+          "name": "state",
+          "type": "text"
+        },
+        {
+          "name": "country",
+          "type": "text"
+        },
+        {
+          "name": "country_latitude",
+          "type": "numeric"
+        },
+        {
+          "name": "country_longitude",
+          "type": "numeric"
+        },
+        {
+          "name": "region",
+          "type": "text"
+        },
+        {
+          "name": "market",
+          "type": "text"
+        },
+        {
+          "name": "is_sample",
+          "type": "boolean"
+        },
+        {
+          "name": "is_unknown",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "table": "fct_sales_lines",
+      "file": "data/fct_sales_lines.csv",
+      "rows": 51290,
+      "sha256": "ce3aea8247b3c7610b8258a80239b665bf7b0490e5ab9fdac5c0da53ce344337",
+      "columns": [
+        {
+          "name": "sales_line_key",
+          "type": "text"
+        },
+        {
+          "name": "source",
+          "type": "text"
+        },
+        {
+          "name": "row_id",
+          "type": "integer"
+        },
+        {
+          "name": "order_id",
+          "type": "text"
+        },
+        {
+          "name": "order_date",
+          "type": "date"
+        },
+        {
+          "name": "customer_key",
+          "type": "text"
+        },
+        {
+          "name": "product_key",
+          "type": "text"
+        },
+        {
+          "name": "region_key",
+          "type": "text"
+        },
+        {
+          "name": "segment",
+          "type": "text"
+        },
+        {
+          "name": "quantity",
+          "type": "integer"
+        },
+        {
+          "name": "sales",
+          "type": "numeric"
+        },
+        {
+          "name": "discount",
+          "type": "numeric"
+        },
+        {
+          "name": "profit",
+          "type": "numeric"
+        },
+        {
+          "name": "unit_price",
+          "type": "numeric"
+        },
+        {
+          "name": "pre_discount_amount",
+          "type": "numeric"
+        },
+        {
+          "name": "discount_amount",
+          "type": "numeric"
+        },
+        {
+          "name": "net_sales",
+          "type": "numeric"
+        },
+        {
+          "name": "discount_band",
+          "type": "text"
+        },
+        {
+          "name": "is_loss",
+          "type": "boolean"
+        },
+        {
+          "name": "currency",
+          "type": "text"
+        },
+        {
+          "name": "is_sample",
+          "type": "boolean"
+        },
+        {
+          "name": "ingested_at",
+          "type": "timestamp with time zone"
+        }
+      ]
+    },
+    {
+      "table": "mart_customer_retention",
+      "file": "data/mart_customer_retention.csv",
+      "rows": 1167,
+      "sha256": "19c3753e983c2527d239aff47aada837a7100c6ee231194a12fa34c674618514",
+      "columns": [
+        {
+          "name": "cohort_month",
+          "type": "date"
+        },
+        {
+          "name": "months_since_first_order",
+          "type": "integer"
+        },
+        {
+          "name": "is_sample",
+          "type": "boolean"
+        },
+        {
+          "name": "cohort_customers",
+          "type": "bigint"
+        },
+        {
+          "name": "active_customers",
+          "type": "bigint"
+        },
+        {
+          "name": "retention_rate",
+          "type": "numeric"
+        },
+        {
+          "name": "order_count",
+          "type": "bigint"
+        },
+        {
+          "name": "net_sales",
+          "type": "numeric"
+        },
+        {
+          "name": "profit",
+          "type": "numeric"
+        },
+        {
+          "name": "avg_net_sales_per_customer",
+          "type": "numeric"
+        },
+        {
+          "name": "median_net_sales_per_customer",
+          "type": "numeric"
+        },
+        {
+          "name": "first_order_date",
+          "type": "date"
+        },
+        {
+          "name": "last_order_date",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "table": "mart_discount_impact",
+      "file": "data/mart_discount_impact.csv",
+      "rows": 960,
+      "sha256": "3e8017ff0824e04a40c304f7cff94074cd29f6a15de30d69a915c282b094aca1",
+      "columns": [
+        {
+          "name": "order_month",
+          "type": "date"
+        },
+        {
+          "name": "category",
+          "type": "text"
+        },
+        {
+          "name": "discount_band",
+          "type": "text"
+        },
+        {
+          "name": "is_sample",
+          "type": "boolean"
+        },
+        {
+          "name": "line_count",
+          "type": "bigint"
+        },
+        {
+          "name": "order_count",
+          "type": "bigint"
+        },
+        {
+          "name": "quantity",
+          "type": "bigint"
+        },
+        {
+          "name": "gross_sales",
+          "type": "numeric"
+        },
+        {
+          "name": "discount_amount",
+          "type": "numeric"
+        },
+        {
+          "name": "net_sales",
+          "type": "numeric"
+        },
+        {
+          "name": "profit",
+          "type": "numeric"
+        },
+        {
+          "name": "profit_margin",
+          "type": "numeric"
+        },
+        {
+          "name": "avg_discount",
+          "type": "numeric"
+        },
+        {
+          "name": "avg_profit_per_line",
+          "type": "numeric"
+        },
+        {
+          "name": "median_profit_per_line",
+          "type": "numeric"
+        },
+        {
+          "name": "loss_line_count",
+          "type": "bigint"
+        },
+        {
+          "name": "loss_line_share",
+          "type": "numeric"
+        },
+        {
+          "name": "first_order_date",
+          "type": "date"
+        },
+        {
+          "name": "last_order_date",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "table": "mart_market_growth",
+      "file": "data/mart_market_growth.csv",
+      "rows": 93,
+      "sha256": "2d1b7e2e280283835d314cb08082cfb90044484838033690e5ff5df13c875ff0",
+      "columns": [
+        {
+          "name": "order_year",
+          "type": "integer"
+        },
+        {
+          "name": "market",
+          "type": "text"
+        },
+        {
+          "name": "region",
+          "type": "text"
+        },
+        {
+          "name": "is_sample",
+          "type": "boolean"
+        },
+        {
+          "name": "line_count",
+          "type": "bigint"
+        },
+        {
+          "name": "order_count",
+          "type": "bigint"
+        },
+        {
+          "name": "customer_count",
+          "type": "bigint"
+        },
+        {
+          "name": "gross_sales",
+          "type": "numeric"
+        },
+        {
+          "name": "net_sales",
+          "type": "numeric"
+        },
+        {
+          "name": "profit",
+          "type": "numeric"
+        },
+        {
+          "name": "profit_margin",
+          "type": "numeric"
+        },
+        {
+          "name": "avg_order_value",
+          "type": "numeric"
+        },
+        {
+          "name": "median_order_value",
+          "type": "numeric"
+        },
+        {
+          "name": "prev_year_gross_sales",
+          "type": "numeric"
+        },
+        {
+          "name": "gross_sales_yoy_change",
+          "type": "numeric"
+        },
+        {
+          "name": "prev_year_net_sales",
+          "type": "numeric"
+        },
+        {
+          "name": "net_sales_yoy_change",
+          "type": "numeric"
+        },
+        {
+          "name": "prev_year_profit",
+          "type": "numeric"
+        },
+        {
+          "name": "profit_yoy_delta",
+          "type": "numeric"
+        },
+        {
+          "name": "prev_year_order_count",
+          "type": "bigint"
+        },
+        {
+          "name": "first_order_date",
+          "type": "date"
+        },
+        {
+          "name": "last_order_date",
+          "type": "date"
+        }
+      ]
+    },
+    {
+      "table": "mart_segment_pnl",
+      "file": "data/mart_segment_pnl.csv",
+      "rows": 48,
+      "sha256": "ed837260909295ab64eef10de5e769bf5dd8b5f442e982b8ca3eef60acdfc997",
+      "columns": [
+        {
+          "name": "order_quarter",
+          "type": "date"
+        },
+        {
+          "name": "quarter_label",
+          "type": "text"
+        },
+        {
+          "name": "segment",
+          "type": "text"
+        },
+        {
+          "name": "is_sample",
+          "type": "boolean"
+        },
+        {
+          "name": "line_count",
+          "type": "bigint"
+        },
+        {
+          "name": "order_count",
+          "type": "bigint"
+        },
+        {
+          "name": "customer_count",
+          "type": "bigint"
+        },
+        {
+          "name": "gross_sales",
+          "type": "numeric"
+        },
+        {
+          "name": "discount_amount",
+          "type": "numeric"
+        },
+        {
+          "name": "net_sales",
+          "type": "numeric"
+        },
+        {
+          "name": "profit",
+          "type": "numeric"
+        },
+        {
+          "name": "profit_margin",
+          "type": "numeric"
+        },
+        {
+          "name": "profit_from_gains",
+          "type": "numeric"
+        },
+        {
+          "name": "profit_lost_on_losses",
+          "type": "numeric"
+        },
+        {
+          "name": "loss_line_count",
+          "type": "bigint"
+        },
+        {
+          "name": "loss_order_count",
+          "type": "bigint"
+        },
+        {
+          "name": "avg_order_value",
+          "type": "numeric"
+        },
+        {
+          "name": "median_order_value",
+          "type": "numeric"
+        },
+        {
+          "name": "avg_order_profit",
+          "type": "numeric"
+        },
+        {
+          "name": "median_order_profit",
+          "type": "numeric"
+        },
+        {
+          "name": "first_order_date",
+          "type": "date"
+        },
+        {
+          "name": "last_order_date",
+          "type": "date"
+        }
+      ]
+    }
+  ]
+}

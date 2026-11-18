@@ -3,98 +3,119 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from dashboard.components import charts
-from dashboard.components.formatting import money, number, percent
+from dashboard.components.formatting import money, number
 from dashboard.components.layout import KPI, kpis, page_heading, panel
 from dashboard.components.report import Report, run_view
-from dashboard.components.tables import download, table
-from dashboard.data.analytics import catalog_breakdown, percent_change, purchased_lines, search_rows
+from dashboard.components.tables import download, mart_table, table
+from dashboard.data.analytics import (
+    breakdown, discount_performance, divide, percent_change, search_rows, top_profitable_products,
+)
 
 
-def filter_catalog(lines: pd.DataFrame, department: str, query: str) -> pd.DataFrame:
-    if department != "All departments":
-        lines = lines.loc[lines["department"].eq(department)]
-    return search_rows(lines, query, ["category", "department", "sku", "product"])
+def select_catalog(lines: pd.DataFrame, category: str, query: str) -> pd.DataFrame:
+    if category != "All categories":
+        lines = lines.loc[lines["category"].eq(category)]
+    return search_rows(lines, query, ["category", "subcategory", "sku", "product"])
 
 
 def render(report: Report) -> pd.DataFrame:
-    page_heading("Category Performance & Merchandising", "Revenue contribution and order volume by product hierarchy.")
-    category_filter, search = st.columns([1, 2])
-    departments = sorted(report.snapshot.items["department"].unique())
-    with category_filter:
-        department = st.selectbox("Department", ["All departments", *departments], key="catalog_department")
+    currency = report.currency
+    page_heading("Category Performance & Merchandising", f"Net sales, discount impact and profit by catalog · {currency}")
+    category_slot, search = st.columns([1, 2])
+    with category_slot:
+        category = st.selectbox("Category", ["All categories", *sorted(report.snapshot.lines["category"].unique())],
+                                key="catalog_category")
     with search:
-        query = st.text_input("Search catalog", placeholder="Category, product or SKU", key="catalog_search")
-
-    scoped_lines = purchased_lines(report.snapshot, report.orders())
-    lines = filter_catalog(scoped_lines, department, query)
-    catalog = catalog_breakdown(lines)
+        query = st.text_input("Search catalog", placeholder="Category, subcategory, product or SKU")
+    lines = select_catalog(report.lines(), category, query)
+    catalog = breakdown(lines, ["category"])
     if catalog.empty:
-        st.info("No purchased items match these dates and catalog filters.")
+        st.info("No sales lines match these dates and catalog filters.")
         return catalog
 
-    previous = filter_catalog(purchased_lines(report.snapshot, report.orders(previous=True)), department, query)
-    previous = catalog_breakdown(previous).set_index("category")["revenue_cents"]
-    catalog["growth"] = percent_change(catalog["revenue_cents"], catalog["category"].map(previous))
-    top = catalog.iloc[0]
-    volume = catalog.loc[catalog["orders"].idxmax()]
+    previous = breakdown(select_catalog(report.lines(previous=True), category, query), ["category"])
+    catalog["growth"] = percent_change(catalog["net_sales_cents"],
+                                       catalog["category"].map(previous.set_index("category")["net_sales_cents"]))
+    top, volume = catalog.iloc[0], catalog.loc[catalog["orders"].idxmax()]
     growth = catalog.dropna(subset=["growth"]).nlargest(1, "growth")
-    growth_label = growth.iloc[0]["category"] if not growth.empty else "—"
-    growth_note = f"{growth.iloc[0]['growth']:+.1f}% vs {report.scope.comparison.lower()}" if not growth.empty else "Comparison unavailable"
+    leader = growth.iloc[0] if not growth.empty else None
     kpis(
-        KPI("Active categories", number(len(catalog)), "category", f"{lines['sku'].nunique()} selling SKUs"),
-        KPI("Top grossing category", money(top["revenue_cents"]), "workspace_premium", top["category"]),
+        KPI("Active categories", number(len(catalog)), "category", f"{lines['sku'].nunique():,} known selling SKUs"),
+        KPI("Top category by net sales", money(top["net_sales_cents"], currency=currency),
+            "workspace_premium", top["category"]),
         KPI("Highest order volume", number(volume["orders"]), "shopping_bag", volume["category"]),
-        KPI("Revenue growth leader", growth_label, "trending_up", growth_note),
+        KPI("Net sales growth leader", leader["category"] if leader is not None else "—", "trending_up",
+            f"{leader['growth']:+.1f}% vs {report.scope.comparison.lower()}" if leader is not None else "Comparison unavailable"),
     )
-
     share, matrix = st.columns([5, 7])
-    with share, panel("category_mix", "Revenue Share by Hierarchy", "Contribution across the filtered catalog"):
-        donut, ranking = st.columns([3, 4], gap="small")
-        palette = [charts.PALETTE[index % len(charts.PALETTE)] for index in range(len(catalog))]
-        with donut:
-            fig = charts.donut(catalog["category"], catalog["revenue_cents"] / 100, colors=palette)
-            fig.update_traces(hovertemplate="%{label}<br>R$ %{value:,.2f} · %{percent}<extra></extra>")
-            fig.add_annotation(x=.5, y=.5, text=f"<b>{len(catalog)}</b><br>categories", showarrow=False)
-            charts.plot(fig, "category_mix", 252)
-        with ranking:
-            st.html('<div class="cp-ranking">' + "".join(
-                ranking_row(row.category, percent(row.share), color)
-                for row, color in zip(catalog.itertuples(), palette)
-            ) + "</div>")
-        st.caption(f"{money(lines['revenue_cents'].sum(), 2)} in merchandise revenue")
-    with matrix, panel("category_matrix", "Category Volume vs. Revenue Matrix",
-                       "Bubble size reflects units sold. Guides mark the category medians."):
+    with share, panel("category_mix", "Net Sales by Category", "Share of net sales in the filtered catalog"):
+        fig = charts.sales_composition(catalog["category"], catalog["net_sales_cents"], currency)
+        if fig is None:
+            st.info("Sales share is unavailable when every category has zero net sales.")
+        else:
+            if catalog["net_sales_cents"].lt(0).any():
+                st.caption("Negative net sales are shown on a signed scale.")
+            charts.plot(fig, "category_mix", 322, bottom_margin=32)
+    with matrix, panel("category_matrix", "Category Volume vs. Net Sales",
+                       "Bubble size shows units sold. Guides mark the category medians."):
         fig = go.Figure(go.Scatter(
-            x=catalog["orders"], y=catalog["revenue_cents"] / 100, text=catalog["category"],
+            x=catalog["orders"], y=catalog["net_sales_cents"] / 100, text=catalog["category"],
             mode="markers", customdata=catalog["units"],
-            marker=dict(
-                size=12 + 24 * (catalog["units"] / catalog["units"].max()) ** .5,
-                color=palette, opacity=.85, line=dict(color="white", width=1),
-            ),
-            hovertemplate="%{text}<br>%{x:,} orders · %{customdata:,} units<br>R$ %{y:,.2f}<extra></extra>",
+            marker=dict(size=14 + 22 * (catalog["units"] / catalog["units"].clip(lower=1).max()) ** .5,
+                        color=charts.MINT),
+            hovertemplate=f"%{{text}}<br>%{{x:,}} orders · %{{customdata:,}} units<br>{currency} %{{y:,.2f}}<extra></extra>",
         ))
         fig.add_vline(x=catalog["orders"].median(), line_dash="dot", line_color=charts.SAGE)
-        fig.add_hline(y=catalog["revenue_cents"].median() / 100, line_dash="dot", line_color=charts.SAGE)
-        fig.update_xaxes(title="Order count", rangemode="tozero")
-        fig.update_yaxes(tickprefix="R$ ", rangemode="tozero")
-        charts.plot(fig, "category_matrix", 283)
+        fig.add_hline(y=catalog["net_sales_cents"].median() / 100, line_dash="dot", line_color=charts.SAGE)
+        fig.update_xaxes(title="Distinct orders", rangemode="tozero")
+        fig.update_yaxes(tickprefix=f"{currency} ", rangemode="tozero")
+        charts.plot(fig, "category_matrix", 294)
 
     with panel("category_catalog", "Merchandising & Catalog Breakdown",
-               "Orders can contribute to multiple categories. Revenue adds across categories."):
-        display = catalog[[
-            "category", "department", "active_skus", "revenue_cents", "share", "orders", "units",
-            "basket_depth", "growth",
-        ]]
-        download(display, "categories")
-        table(display, height=290)
+               "Orders may appear in multiple categories. Net sales and profit add across categories."):
+        display = breakdown(lines, ["category", "subcategory"])
+        download(display, "categories", currency=currency)
+        table(display, height=290, currency=currency)
+    discount_analysis(lines, currency)
+    if not query:
+        discount = report.mart("mart_discount_impact")
+        if category != "All categories":
+            discount = discount.loc[discount["category"].fillna("Unknown").eq(category)]
+        mart_table(report, "mart_discount_impact", "Monthly Discount Impact", [
+            "order_month", "category", "discount_band", "is_sample", "order_count", "avg_discount", "gross_sales",
+            "discount_amount", "net_sales", "profit", "profit_margin", "loss_line_share",
+            "first_order_date", "last_order_date",
+        ], discount)
     return display
 
 
-def ranking_row(label: str, value: str, color: str) -> str:
-    from html import escape
-
-    return (f'<div class="cp-rank-row"><i style="background:{color}"></i>'
-            f'<span>{escape(label)}</span><strong>{escape(value)}</strong></div>')
+def discount_analysis(lines: pd.DataFrame, currency: str) -> None:
+    with st.expander("Discounts and Profitability"):
+        st.caption("Observed results by discount band. These transactions do not establish what "
+                   "would have sold at a different discount.")
+        bands = discount_performance(lines)
+        bands["discount_band"] = pd.Categorical(
+            bands["discount_band"], categories=["none", "low", "medium", "high"], ordered=True,
+        )
+        band_totals = bands.groupby("discount_band", observed=True)[["profit_cents", "net_sales_cents"]].sum()
+        margin = 100 * divide(band_totals["profit_cents"], band_totals["net_sales_cents"])
+        fig = charts.horizontal(margin.index, margin, ticksuffix="%",
+                                hover="%{y}<br>Profit margin %{x:.1f}%<extra></extra>")
+        charts.plot(fig, "discount_profitability", 205)
+        category_avg = lines.groupby("category", as_index=False)["discount"].mean()
+        category_avg["avg_discount_pct"] = category_avg.pop("discount") * 100
+        st.markdown("**Average sales-line discount by category**")
+        table(category_avg, height=220, currency=currency)
+        st.markdown("**Profitability by category and discount band**")
+        display = bands.sort_values(["category", "discount_band"])[[
+            "category", "discount_band", "avg_discount_pct", "orders", "net_sales_cents", "profit_cents", "margin",
+        ]]
+        table(display, height=250, currency=currency)
+        download(display, "discount-profitability", currency=currency)
+        st.markdown("**Top three profitable products per category**")
+        products = top_profitable_products(lines)[["category", "product", "net_sales_cents", "profit_cents", "margin"]]
+        table(products, height=250, currency=currency)
+        download(products, "profitable-products", currency=currency)
 
 
 if __name__ == "__main__":

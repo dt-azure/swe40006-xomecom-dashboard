@@ -1,126 +1,197 @@
 from datetime import date
+from decimal import Decimal
 
 import pandas as pd
 import pytest
 
+from dashboard.components.tables import csv_text
 from dashboard.data.analytics import (
-    DateScope, catalog_breakdown, conversion_rate, currency_columns, daily_sales, daypart_velocity,
-    geography_breakdown, in_scope, on_time_rate, order_metrics, pipeline_metrics, purchased_lines,
-    search_rows, shipments,
+    DateScope, breakdown, daily_sales, in_scope, mart_in_scope, period_trend,
+    sample_scope, search_rows, totals,
 )
-from dashboard.data.mock_generator import generate_snapshot
-from dashboard.data.mock_provider import MockProvider
-from dashboard.data.postgres_provider import PostgresProvider
-from dashboard.data.provider import ARCHITECTURE, DataSourceError, select_provider
+from dashboard.data.postgres_provider import PostgresProvider, normalize_lines
+from dashboard.data.provider import DataSourceError
 
 
-@pytest.fixture(scope="module")
-def snapshot():
-    return generate_snapshot()
+def gold_line(key, order, day, amount, *, market="Europe", customer="u-1", sample=False):
+    return {
+        "sales_line_key": key, "source": "xom", "order_id": order, "date": day,
+        "customer_key": customer, "sku": "sku-1", "product": "Face cream",
+        "category": "Face care", "market": market,
+        "quantity": 1, "sales": Decimal(amount), "net_sales": Decimal(amount),
+        "profit": Decimal("1.25"), "discount_amount": Decimal("0"), "is_sample": sample,
+        "currency": "USD",
+    }
 
 
-def test_demo_is_deterministic(snapshot):
-    again = generate_snapshot()
-    for name in ("orders", "items", "traffic", "product_traffic", "runs", "stages"):
-        pd.testing.assert_frame_equal(getattr(snapshot, name), getattr(again, name))
-    assert snapshot.orders["order_id"].is_unique
-    assert snapshot.items["item_id"].is_unique
+@pytest.fixture
+def lines():
+    raw = pd.DataFrame([
+        gold_line("1", "o-1", "2023-12-30", "10.25"),
+        gold_line("2", "o-1", "2023-12-30", "12.25", market="LATAM"),
+        gold_line("3", "o-2", "2023-12-31", "7.25", customer=None),
+        gold_line("4", "o-1", "2026-08-02", "50", sample=True),
+    ])
+    return normalize_lines(raw)[0]
 
 
-def test_revenue_and_orders_reconcile_across_pages(snapshot):
-    scope = DateScope(date(2024, 6, 1), date(2024, 8, 15))
-    orders = in_scope(snapshot.orders, scope)
-    overview = order_metrics(orders)
-    days = daily_sales(orders, scope)
-    catalog = catalog_breakdown(purchased_lines(snapshot, orders))
-    regions = geography_breakdown(orders, ["region", "state", "city"])
+def test_real_metrics_reconcile_at_the_sales_line_grain(lines):
+    data = sample_scope(lines, "Historical only")
+    current = totals(data)
+    assert current["net_sales_cents"] == 2975
+    assert current["orders"] == 2
+    assert current["customers"] == 1
+    assert current["aov_cents"] == 1487.5
+    assert current["margin"] == pytest.approx(375 / 2975 * 100)
 
-    assert overview["revenue"] == days["revenue_cents"].sum() == catalog["revenue_cents"].sum()
-    assert overview["revenue"] == regions["revenue_cents"].sum()
-    assert overview["orders"] == days["orders"].sum() == regions["orders"].sum()
-    assert overview["aov"] == pytest.approx(overview["revenue"] / overview["orders"])
-    assert catalog["share"].sum() == pytest.approx(100)
-    assert (orders["revenue_cents"] + orders["shipping_cents"]).equals(orders["payment_cents"])
-    assert currency_columns(days)["revenue_brl"].sum() == pytest.approx(overview["revenue"] / 100)
-
-
-def test_inclusive_dates_comparisons_and_literal_search(snapshot):
-    day = date(2024, 8, 15)
-    scope = DateScope(day, day, "Previous period")
-    selection = in_scope(snapshot.orders, scope)
-    assert not selection.empty
-    assert selection["ordered_at"].dt.date.eq(day).all()
-    assert in_scope(snapshot.runs, scope, "started_at")["started_at"].dt.date.eq(day).all()
-    assert scope.prior(snapshot.min_date).end == date(2024, 8, 14)
-    assert DateScope(date(2024, 2, 29), date(2024, 3, 2)).prior(snapshot.min_date).start == date(2023, 2, 28)
-    assert DateScope(snapshot.min_date, snapshot.min_date).prior(snapshot.min_date) is None
-    assert search_rows(selection, "sao paulo", ["city"])["city"].eq("São Paulo").all()
-    assert search_rows(selection, "[", ["city"]).empty
-
-    matrix = daypart_velocity(selection, scope)
-    assert matrix.loc["Thu"].sum() == order_metrics(selection)["orders"]
-    assert matrix.drop(index="Thu").isna().all().all()
+    geography = breakdown(data, ["market"])
+    catalog = breakdown(data, ["category"])
+    daily = daily_sales(data, DateScope(date(2023, 12, 30), date(2023, 12, 31)))
+    assert geography["orders"].sum() == 3  # One order spans two markets.
+    for view in (geography, catalog, daily):
+        assert view["net_sales_cents"].sum() == current["net_sales_cents"]
 
 
-def test_delivery_chronology_and_kpis(snapshot):
-    deliveries = shipments(snapshot.orders)
-    actual = deliveries["delivered_at"]
-    assert actual.gt(deliveries["dispatched_at"]).all()
-    assert deliveries["dispatched_at"].gt(deliveries["ordered_at"]).all()
-    reviewed = deliveries.loc[deliveries["reviewed_at"].notna()]
-    assert reviewed["reviewed_at"].gt(reviewed["delivered_at"]).all()
-    assert reviewed["review_score"].between(1, 5).all()
-    assert reviewed["reviewed_at"].dt.date.le(snapshot.as_of).all()
-    assert deliveries["variance_hours"].gt(0).equals(deliveries["sla_status"].eq("Delayed"))
-    assert on_time_rate(deliveries) == pytest.approx(
-        100 * (1 - deliveries["sla_status"].eq("Delayed").mean())
+def test_dates_sample_separation_and_discontinuous_trends(lines):
+    scope = DateScope(date(2023, 12, 30), date(2026, 8, 2))
+    assert len(in_scope(lines, scope)) == 4
+    assert totals(sample_scope(lines, "Include sample rows"))["orders"] == 3
+    assert totals(sample_scope(lines, "Sample only"))["net_sales_cents"] == 5000
+    monthly = period_trend(lines, scope, "Monthly").set_index("date")
+    assert pd.isna(monthly.loc["2024-01-01", "net_sales_cents"])
+    assert pd.isna(monthly.loc["2024-01-01", "orders"])
+    assert monthly.loc["2026-08-01", "net_sales_cents"] == 5000
+    same_day = DateScope(date(2023, 12, 30), date(2023, 12, 30), "Previous period")
+    assert same_day.prior(date(2020, 1, 1)).end == date(2023, 12, 29)
+    empty = daily_sales(lines.iloc[:0], same_day)
+    assert empty.empty and "orders" in empty
+
+
+def test_mart_filters_keep_whole_coverage_intervals():
+    frame = pd.DataFrame({
+        "first_order_date": [date(2023, 1, 1), date(2023, 3, 1), date(2023, 2, 1)],
+        "last_order_date": [date(2023, 1, 31), date(2023, 3, 31), date(2023, 4, 1)],
+        "is_sample": [False, True, False],
+    })
+    scope = DateScope(date(2023, 1, 1), date(2023, 3, 31))
+    assert mart_in_scope(frame, scope).index.tolist() == [0, 1]
+    assert mart_in_scope(sample_scope(frame, "Historical only"), scope).index.tolist() == [0]
+
+
+def test_search_and_currency_exports():
+    frame = pd.DataFrame({"city": ["São Paulo", "=12+1"], "net_sales_cents": [1050, -500]})
+    assert search_rows(frame, "sao paulo", ["city"]).index.tolist() == [0]
+    assert search_rows(frame, "[", ["city"]).empty
+    csv = csv_text(frame, "USD")
+    assert "net_sales_usd" in csv
+    assert "'=12+1,-5.0" in csv
+
+
+@pytest.mark.parametrize("url, message", [
+    (None, "DASHBOARD_DATABASE_URL"),
+    ("bad url", "valid PostgreSQL URL"),
+    ("sqlite:///tmp/db", "postgresql://"),
+])
+def test_configuration_errors(url, message):
+    with pytest.raises(DataSourceError, match=message):
+        PostgresProvider(url).load()
+
+
+def test_invalid_mixed_currency_or_duplicate_keys_fail():
+    first = gold_line("1", "o-1", "2023-12-30", "10.25")
+    other_currency = gold_line("2", "o-2", "2023-12-30", "10.25") | {"currency": "EUR"}
+    with pytest.raises(DataSourceError, match="multiple currencies"):
+        normalize_lines(pd.DataFrame([first, other_currency]))
+    with pytest.raises(DataSourceError, match="unique keys"):
+        normalize_lines(pd.DataFrame([first, first]))
+
+
+def test_velocity_counts_distinct_orders_and_splits_sales_by_selected_dates(lines):
+    from dashboard.components.velocity import _share_bar
+    from dashboard.data.analytics import weekday_sales_split, weekday_velocity
+
+    extra = normalize_lines(pd.DataFrame([gold_line("5", "o-3", "2023-12-29", "20.25")]))[0]
+    extra["order_key"] = 5
+    data = pd.concat([lines, extra])
+    scope = DateScope(date(2023, 12, 29), date(2023, 12, 31))
+    scoped = in_scope(data, scope)
+    weekdays = weekday_velocity(scoped)
+    assert weekdays.index.tolist() == ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    assert weekdays["orders"].tolist() == [0, 0, 0, 0, 1, 1, 1]
+    assert weekdays["share"].sum() == pytest.approx(100)
+    assert weekday_sales_split(scoped) == (2025, 2975)
+    bar = _share_bar(*weekday_sales_split(scoped), "USD")
+    assert "Mon–Fri: 40.5%" in bar and "Sat–Sun: 59.5%" in bar
+
+    empty = scoped.iloc[:0]
+    assert weekday_velocity(empty)["share"].isna().all()
+    assert weekday_sales_split(empty) == (0, 0)
+    assert "Share unavailable" in _share_bar(0, 0, "USD")
+    assert "Share unavailable" in _share_bar(-500, 1500, "USD")
+
+
+def test_sales_composition_matches_positive_sales_and_handles_signed_or_empty_values():
+    from dashboard.components.charts import sales_composition
+
+    labels = pd.Series(["Category A", "Category B", "Zero"])
+    cents = pd.Series([1600, 2400, 0])
+    for tree in (False, True):
+        fig = sales_composition(labels, cents, "USD", treemap=tree)
+        trace = fig.data[0]
+        assert trace.type == ("treemap" if tree else "pie")
+        assert trace.values == (16, 24)
+        assert sum(trace.customdata) == pytest.approx(100)
+        assert "%{value:,.2f}" in trace.hovertemplate
+        assert sales_composition(labels, cents * 0, "USD", treemap=tree) is None
+        assert sales_composition(labels, cents.where(cents.lt(0)), "USD", treemap=tree) is None
+        assert sales_composition(labels, -cents, "USD", treemap=tree).data[0].type == "bar"
+
+
+def test_discount_and_loss_order_metrics_use_the_correct_grain(lines):
+    from dashboard.data.analytics import discount_performance, segment_performance, top_profitable_products
+
+    data = lines.iloc[:3].assign(segment="Consumer", discount=[.1, .2, 0],
+                                 discount_band=["low", "low", "none"], profit_cents=[-300, 400, -200])
+    bands = discount_performance(data).set_index("discount_band")
+    assert bands.loc["low", "avg_discount_pct"] == pytest.approx(15)
+    assert bands.loc["low", "orders"] == 1
+    segment = segment_performance(data).iloc[0]
+    assert segment["loss_orders"] == 1
+    assert segment["profit_cents"] == -100
+    assert top_profitable_products(data).empty
+
+
+def test_retention_and_cross_region_use_known_customer_and_distinct_keys():
+    from dashboard.data.analytics import (
+        cross_region_customers, customer_activity, observed_customer_value, retention_by_segment, rfm_segments,
     )
-    assert snapshot.traffic["conversions"].sum() == len(snapshot.orders)
-    assert 0 < conversion_rate(snapshot.traffic) < 100
+
+    data = normalize_lines(pd.DataFrame([
+        gold_line("1", "o-1", "2023-12-30", "10"),
+        gold_line("2", "o-1", "2023-12-30", "15", market="LATAM"),
+        gold_line("3", "o-2", "2023-12-31", "20", customer=None),
+        gold_line("4", "o-3", "2023-12-31", "25"),
+    ]))[0].assign(segment="Consumer", region="West")
+    activity = customer_activity(data)
+    assert len(activity) == 1
+    assert activity.loc["u-1", "orders"] == 2
+    assert retention_by_segment(data).iloc[0]["repeat_rate_pct"] == 100
+    assert rfm_segments(activity).iloc[0]["frequency"] == "Repeat"
+    assert cross_region_customers(data) == 1  # Same named region in distinct markets.
+    assert observed_customer_value(data, activity.index, pd.Timestamp("2023-12-30")) == 2500
+    assert observed_customer_value(data, activity.index, pd.Timestamp("2023-12-31")) == 5000
 
 
-def test_pipeline_run_status_and_stages(snapshot):
-    runs = snapshot.runs.set_index("run_id")
-    stats = pipeline_metrics(snapshot.runs, snapshot.as_of)
-    assert stats["success_rate"] == pytest.approx(100 * runs["status"].eq("Success").mean())
-    assert stats["exceptions"] == runs["status"].isin(["Warning", "Failed"]).sum()
-    assert stats["rows_last_day"] == runs.loc[runs["started_at"].dt.date.eq(snapshot.as_of), "rows"].sum()
-    assert set(runs["status"]) == {"Success", "Warning", "Failed"}
-    assert snapshot.stages.groupby("run_id").size().eq(len(ARCHITECTURE)).all()
-    assert snapshot.stages.groupby("run_id")["duration_seconds"].sum().equals(runs["duration_seconds"].sort_index())
-    for run_id, stages in snapshot.stages.groupby("run_id", sort=False):
-        status = list(stages["status"])
-        expected = "Failed" if "Failed" in status else "Warning" if "Warning" in status else "Success"
-        assert runs.at[run_id, "status"] == expected
-        if expected == "Failed":
-            assert set(status[status.index("Failed") + 1:]) <= {"Skipped"}
+def test_monthly_growth_uses_pre_window_history_and_does_not_bridge_missing_months():
+    from dashboard.data.analytics import monthly_growth
 
-
-def test_empty_metrics_are_defined(snapshot):
-    scope = DateScope(date(2022, 1, 1), date(2022, 1, 2))
-    orders = in_scope(snapshot.orders, scope)
-    assert orders.empty
-    metrics = order_metrics(orders)
-    assert metrics["revenue"] == 0 and metrics["orders"] == 0 and pd.isna(metrics["aov"])
-    assert catalog_breakdown(purchased_lines(snapshot, orders)).empty
-    assert geography_breakdown(orders, ["state"]).empty
-    assert pd.isna(on_time_rate(shipments(orders)))
-    empty_stats = pipeline_metrics(in_scope(snapshot.runs, scope, "started_at"), scope.end)
-    assert pd.isna(empty_stats["success_rate"]) and empty_stats["exceptions"] == 0
-
-
-def test_provider_selection_and_configuration(monkeypatch):
-    monkeypatch.delenv("DASHBOARD_DATA_SOURCE", raising=False)
-    assert isinstance(select_provider(), MockProvider)
-    monkeypatch.setenv("DASHBOARD_DATA_SOURCE", "postgres")
-    monkeypatch.delenv("DASHBOARD_DATABASE_URL", raising=False)
-    provider = select_provider()
-    assert isinstance(provider, PostgresProvider)
-    with pytest.raises(DataSourceError, match="DASHBOARD_DATABASE_URL"):
-        provider.load()
-    with pytest.raises(DataSourceError, match="mart mappings"):
-        PostgresProvider("postgresql+psycopg2://localhost/example").load()
-    with pytest.raises(DataSourceError, match="valid SQLAlchemy URL"):
-        PostgresProvider("invalid-url").load()
-    with pytest.raises(DataSourceError, match="mock or postgres"):
-        select_provider("unavailable")
+    data = normalize_lines(pd.DataFrame([
+        gold_line("1", "o-1", "2022-12-05", "10"),
+        gold_line("2", "o-2", "2023-10-05", "20"),
+        gold_line("3", "o-3", "2023-12-05", "30"),
+        gold_line("4", "o-4", "2024-01-05", "40"),
+    ]))[0]
+    result = monthly_growth(data, DateScope(date(2023, 12, 1), date(2024, 1, 30)))
+    assert result["date"].dt.strftime("%Y-%m").tolist() == ["2023-12"]
+    assert result["yoy_growth_pct"].iloc[0] == pytest.approx(200)
+    assert pd.isna(result["growth"].iloc[0])

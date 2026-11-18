@@ -8,7 +8,8 @@ requires-python = ">=3.12,<3.13"
 # Dockerfile and CI install exactly the same set.
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+# dashboard/tests: temporary, until those tests move to tests/dashboard/
+testpaths = ["tests", "dashboard/tests"]
 # Lets tests do `from api import ...` / `from pipeline import ...`
 pythonpath = ["."]
 addopts = "-ra --strict-markers"

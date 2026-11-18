@@ -1,9 +1,10 @@
 import streamlit as st
 
+from .filters import data_scope_control
 from .layout import icon
 
 
-def sidebar(pages: list, selected, demo: bool) -> None:
+def sidebar(pages: list, selected) -> str:
     with st.sidebar:
         st.html('<div class="cp-sidebar-label">Enterprise Views</div>')
         for page in pages:
@@ -12,12 +13,12 @@ def sidebar(pages: list, selected, demo: bool) -> None:
                     st.page_link(page, width="stretch")
             else:
                 st.page_link(page, width="stretch")
-        label = "DEMO ENVIRONMENT — MOCK DATA" if demo else "POSTGRESQL DATA SOURCE"
-        detail = "Fixed synthetic snapshot" if demo else "Reporting provider"
+        selection = data_scope_control()
         st.html(
             f'<div class="cp-environment">{icon("database")}<div>'
-            f'<strong>{label}</strong><span>{detail}</span></div></div>'
+            '<strong>PostgreSQL Gold</strong><span>Warehouse reporting</span></div></div>'
         )
+    return selection
 
 
 def brand() -> None:

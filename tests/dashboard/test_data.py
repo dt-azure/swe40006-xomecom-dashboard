@@ -11,6 +11,9 @@ from dashboard.data.analytics import (
 )
 from dashboard.data.postgres_provider import PostgresProvider, normalize_lines
 from dashboard.data.provider import DataSourceError
+from dashboard.data.analytics import (
+        cross_region_customers, customer_activity, observed_customer_value, retention_by_segment, rfm_segments,
+    )
 
 
 def gold_line(key, order, day, amount, *, market="Europe", customer="u-1", sample=False):
@@ -162,10 +165,6 @@ def test_discount_and_loss_order_metrics_use_the_correct_grain(lines):
 
 
 def test_retention_and_cross_region_use_known_customer_and_distinct_keys():
-    from dashboard.data.analytics import (
-        cross_region_customers, customer_activity, observed_customer_value, retention_by_segment, rfm_segments,
-    )
-
     data = normalize_lines(pd.DataFrame([
         gold_line("1", "o-1", "2023-12-30", "10"),
         gold_line("2", "o-1", "2023-12-30", "15", market="LATAM"),

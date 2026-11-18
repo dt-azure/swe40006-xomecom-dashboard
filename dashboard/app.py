@@ -1,15 +1,11 @@
 """Streamlit entry point for CommercePulse."""
+
 import os
 import sys
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
-
-# Streamlit adds this script's directory to sys.path. Also expose the package root.
-ROOT = str(Path(__file__).resolve().parent.parent)
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
 
 from dashboard.components.filters import comparison_control, date_controls, preserve_widget
 from dashboard.components.layout import load_theme
@@ -18,6 +14,11 @@ from dashboard.components.report import Report, active_report
 from dashboard.data.analytics import DateScope, sample_scope
 from dashboard.data.postgres_provider import PostgresProvider
 from dashboard.data.provider import DataSourceError, Snapshot
+
+# Streamlit adds this script's directory to sys.path. Also expose the package root.
+ROOT = str(Path(__file__).resolve().parent.parent)
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
 VIEWS = (
     ("overview", "Overview", "dashboard"),
@@ -34,13 +35,17 @@ def gold_snapshot(database_url: str | None) -> Snapshot:
 
 
 def main() -> None:
-    st.set_page_config(page_title="CommercePulse", page_icon=":material/monitoring:",
-                       layout="wide", initial_sidebar_state="auto")
+    st.set_page_config(
+        page_title="CommercePulse", page_icon=":material/monitoring:", layout="wide", initial_sidebar_state="auto"
+    )
     load_theme()
     pages = [
         st.Page(
-            f"views/{filename}.py", title=title, icon=f":material/{symbol}:",
-            default=filename == "overview", url_path=title.lower().replace(" & ", "-").replace(" ", "-"),
+            f"views/{filename}.py",
+            title=title,
+            icon=f":material/{symbol}:",
+            default=filename == "overview",
+            url_path=title.lower().replace(" & ", "-").replace(" ", "-"),
         )
         for filename, title, symbol in VIEWS
     ]
@@ -58,8 +63,9 @@ def main() -> None:
         return
 
     with st.container(key="cp_toolbar"):
-        logo, calendar, compare, freshness, export = st.columns([1.35, 1.55, 1.15, 1.1, 1.1],
-                                                               gap="small", vertical_alignment="center")
+        logo, calendar, compare, freshness, export = st.columns(
+            [1.35, 1.55, 1.15, 1.1, 1.1], gap="small", vertical_alignment="center"
+        )
         with logo:
             brand()
         with calendar:

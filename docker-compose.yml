@@ -59,6 +59,7 @@ services:
     environment:
       <<: *app-env
       DASHBOARD_PORT: "8501"
+      DASHBOARD_DATABASE_URL: postgresql://${POSTGRES_USER:-ecommerce}:${POSTGRES_PASSWORD:-change-me-local-only}@db:5432/${POSTGRES_DB:-ecommerce}
     ports:
       - "8501:8501"
     depends_on:

@@ -3,7 +3,8 @@ flask>=3.1
 
 # Pipeline
 requests>=2.32
-psycopg2-binary>=2.9,<3
+psycopg2-binary>=2.9,<3     # dashboard
+psycopg[binary]>=3.2        # pipeline
 
 # Dashboard
 streamlit>=1.52,<2

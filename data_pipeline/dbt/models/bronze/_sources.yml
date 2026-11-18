@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: >
+      Records as received from Kafka, written only by the bronze consumer. Append-only: one row
+      per record version, with the envelope fields, the source row as jsonb and the Kafka
+      position. dbt reads it and never writes it.
+    schema: bronze
+    tables:
+      - name: raw_records
+        description: One row per received record version; unique on (source, entity, record_id, source_version, payload_hash).
+        config:
+          loaded_at_field: ingested_at
+          freshness:
+            # Quiet periods are normal (the poller sends only new rows), so this only warns.
+            warn_after: {count: 1, period: day}

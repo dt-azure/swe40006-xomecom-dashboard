@@ -1,0 +1,4 @@
+# Only for src/extract (SQL Server source). Needs unixODBC and "ODBC Driver 18 for SQL Server"
+# installed on the machine; see README.
+-r requirements.txt
+pyodbc==5.5.0

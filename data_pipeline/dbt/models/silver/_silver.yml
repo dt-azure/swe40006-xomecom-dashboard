@@ -1,0 +1,154 @@
+version: 2
+
+models:
+  - name: stg_sales_lines
+    description: >
+      Latest version of each sales line (grain: source, row_id), read from bronze, typed and
+      trimmed. Incremental: each run reads bronze rows ingested since the model's newest row
+      minus the lookback, and merges them on (source, row_id). `sales` is the amount before
+      discount: in the source, sales / quantity is the same for a product at every discount
+      level (all 3,578 products sold, checked 2026-11-17), and profit already reflects the
+      discount. TODO(source): confirm with the data owner.
+    columns:
+      - name: source
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['xom_ecom']
+      - name: row_id
+        description: Source key of the line. Part of the primary key with source.
+        data_tests: [not_null]
+      - name: order_id
+        description: >
+          Opaque order identifier. The year and date embedded in it run 8 years behind
+          order_date; never parse it.
+      - name: order_date
+        description: Business date of the order. Mock orders carry the date they were generated.
+      - name: segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Consumer', 'Corporate', 'Self-Employed']
+      - name: sales
+        description: Amount before discount (unit price x quantity), as the source has it.
+      - name: discount
+        description: Discount rate, 0 to 1.
+      - name: profit
+        description: Profit after discount, as the source has it. Negative on loss-making lines.
+      - name: unit_price
+        description: sales / quantity; NULL when quantity is missing or 0.
+      - name: pre_discount_amount
+        description: Amount before discount. Equal to sales (see the model description).
+      - name: discount_amount
+        description: sales x discount.
+      - name: net_sales
+        description: Amount after discount, sales x (1 - discount).
+      - name: discount_band
+        description: "none (0), low (up to 0.20), medium (up to 0.40), high (above 0.40); NULL when discount is missing."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['none', 'low', 'medium', 'high']
+      - name: is_loss
+        description: profit < 0; NULL when profit is missing.
+      - name: currency
+        description: Always USD. The source has no currency column; documented assumption, TODO(source).
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['USD']
+      - name: has_missing_measure
+        description: True when quantity, sales, discount or profit is NULL.
+      - name: has_invalid_value
+        description: True when a typed field was present in the payload but could not be parsed (it is NULL here).
+      - name: is_sample
+        description: True for mock-generator records, carried from the envelope.
+        data_tests: [not_null]
+      - name: ingested_at
+        description: When the chosen version landed in bronze. Drives the incremental filter.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['source', 'row_id']
+
+  - name: stg_sales_line_flags
+    description: >
+      Cross-record quality flags per sales line (grain: source, row_id). A table rebuilt every
+      run, so a late reference clears its flag on the next cycle. Today 2 lines point at a
+      missing region, 2 at a missing product, and 11 orders have more than one customer.
+    columns:
+      - name: has_unknown_customer
+        description: customer_id is not in stg_customers.
+      - name: has_unknown_region
+        description: region_code is not in stg_regions.
+      - name: has_unknown_product
+        description: product_code is not in stg_products.
+      - name: is_multi_customer_order
+        description: The line's order_id carries more than one customer_id. Flagged, never reassigned.
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['source', 'row_id']
+
+  - name: stg_customers
+    description: Latest version of each customer (grain source, customer_id). Missing attributes, such as gender for 124 customers, stay NULL.
+    columns:
+      - name: source
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['xom_ecom']
+      - name: customer_id
+        data_tests: [not_null]
+      - name: is_sample
+        data_tests: [not_null]
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['source', 'customer_id']
+
+  - name: stg_products
+    description: Latest version of each product (grain source, product_code). Category and subcategory are kept as the source has them.
+    columns:
+      - name: source
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['xom_ecom']
+      - name: product_code
+        data_tests: [not_null]
+      - name: product_name
+        description: The source's `product` column.
+      - name: is_sample
+        data_tests: [not_null]
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['source', 'product_code']
+
+  - name: stg_regions
+    description: Latest version of each region, at city level (grain source, region_code).
+    columns:
+      - name: source
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['xom_ecom']
+      - name: region_code
+        data_tests: [not_null]
+      - name: market
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Africa', 'Asia Pacific', 'Europe', 'LATAM', 'USCA']
+      - name: is_sample
+        data_tests: [not_null]
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['source', 'region_code']

@@ -1,0 +1,14 @@
+# Runtime for every pipeline service (one image: api, consumer, poller, transform-runner).
+
+# Raw data API, loaders, poller
+Flask==3.1.2
+gunicorn==25.1.0
+psycopg[binary]==3.3.3
+python-dotenv==1.2.1
+
+# Kafka producer (API) and consumer (bronze loader)
+confluent-kafka==2.16.1
+
+# Transforms (transform runner)
+dbt-core==1.12.7
+dbt-postgres==1.11.0

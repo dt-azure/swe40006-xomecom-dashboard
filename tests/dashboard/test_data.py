@@ -1,8 +1,8 @@
-from datetime import date
-from decimal import Decimal
-
 import pandas as pd
 import pytest
+
+from datetime import date
+from decimal import Decimal
 
 from dashboard.components.tables import csv_text
 from dashboard.data.analytics import (

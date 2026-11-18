@@ -1,13 +1,14 @@
 import json
 import os
-import pytest
 from datetime import date
 from importlib import import_module
 from pathlib import Path
+
+import pytest
 from streamlit.testing.v1 import AppTest
+
 from dashboard.data.analytics import totals
 from dashboard.data.postgres_provider import PostgresProvider
-
 
 ROOT = Path(__file__).resolve().parents[2] / "dashboard"
 VIEWS = (

@@ -1,17 +1,28 @@
-import pandas as pd
-import pytest
 from datetime import date
 from decimal import Decimal
+
+import pandas as pd
+import pytest
+
 from dashboard.components.tables import csv_text
 from dashboard.data.analytics import (
-    DateScope, breakdown, daily_sales, in_scope, mart_in_scope, period_trend,
-    sample_scope, search_rows, totals,
+    DateScope,
+    breakdown,
+    cross_region_customers,
+    customer_activity,
+    daily_sales,
+    in_scope,
+    mart_in_scope,
+    observed_customer_value,
+    period_trend,
+    retention_by_segment,
+    rfm_segments,
+    sample_scope,
+    search_rows,
+    totals,
 )
 from dashboard.data.postgres_provider import PostgresProvider, normalize_lines
 from dashboard.data.provider import DataSourceError
-from dashboard.data.analytics import (
-        cross_region_customers, customer_activity, observed_customer_value, retention_by_segment, rfm_segments,
-    )
 
 
 def gold_line(key, order, day, amount, *, market="Europe", customer="u-1", sample=False):

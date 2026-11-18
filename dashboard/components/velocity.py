@@ -1,4 +1,5 @@
 """Date-only velocity card for Gold sources without transaction timestamps."""
+
 from html import escape
 
 import pandas as pd
@@ -49,9 +50,9 @@ def _day_rows(velocity: pd.DataFrame) -> str:
         level = "low"
         if pd.notna(row["share"]) and row["share"] > 0:
             ratio = row["share"] / peak
-            if ratio >= .9:
+            if ratio >= 0.9:
                 level = "peak" if weekend else "high"
-            elif ratio >= .6:
+            elif ratio >= 0.6:
                 level = "surge" if weekend else "moderate"
         rows.append(
             f'<tr class="{"weekend" if weekend else "weekday"}"><th scope="row">{day}{" ★" if weekend else ""}</th>'
@@ -66,9 +67,11 @@ def _share_bar(weekday: int, weekend: int, currency: str) -> str:
     heading = '<div class="cp-velocity-share-heading"><strong>Weekend Revenue Share</strong>'
     if total <= 0 or min(weekday, weekend) < 0:
         reason = "net sales are zero" if total == 0 else "one or both net sales amounts are negative"
-        return (f'{heading}</div><p class="cp-velocity-note">Share unavailable: {reason}. '
-                f'Mon–Fri {money(weekday, 2, currency=currency)} · '
-                f'Sat–Sun {money(weekend, 2, currency=currency)}.</p>')
+        return (
+            f'{heading}</div><p class="cp-velocity-note">Share unavailable: {reason}. '
+            f"Mon–Fri {money(weekday, 2, currency=currency)} · "
+            f"Sat–Sun {money(weekend, 2, currency=currency)}.</p>"
+        )
 
     weekday_share = 100 * weekday / total
     weekday_label = round(weekday_share, 1)

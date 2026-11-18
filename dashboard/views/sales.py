@@ -23,25 +23,46 @@ def render(report: Report) -> pd.DataFrame:
     current, previous = totals(lines), totals(report.lines(previous=True))
     peak = daily.loc[daily["net_sales_cents"].idxmax()]
     kpis(
-        KPI("Period net sales", money(current["net_sales_cents"], currency=currency), "payments",
-            *delta(current["net_sales_cents"], previous["net_sales_cents"], report.scope.comparison)),
-        KPI("Total order count", number(current["orders"]), "shopping_cart_checkout",
-            *delta(current["orders"], previous["orders"], report.scope.comparison)),
-        KPI("Peak daily net sales", money(peak["net_sales_cents"], currency=currency), "workspace_premium",
-            peak["date"].strftime("%b %d, %Y")),
-        KPI("Net sales per order", money(current["aov_cents"], 2, currency=currency), "point_of_sale",
-            *delta(current["aov_cents"], previous["aov_cents"], report.scope.comparison)),
+        KPI(
+            "Period net sales",
+            money(current["net_sales_cents"], currency=currency),
+            "payments",
+            *delta(current["net_sales_cents"], previous["net_sales_cents"], report.scope.comparison),
+        ),
+        KPI(
+            "Total order count",
+            number(current["orders"]),
+            "shopping_cart_checkout",
+            *delta(current["orders"], previous["orders"], report.scope.comparison),
+        ),
+        KPI(
+            "Peak daily net sales",
+            money(peak["net_sales_cents"], currency=currency),
+            "workspace_premium",
+            peak["date"].strftime("%b %d, %Y"),
+        ),
+        KPI(
+            "Net sales per order",
+            money(current["aov_cents"], 2, currency=currency),
+            "point_of_sale",
+            *delta(current["aov_cents"], previous["aov_cents"], report.scope.comparison),
+        ),
     )
 
     left, right = st.columns([7, 4])
     with left, panel("sales_revenue", "Net Sales vs Order Count", "Periods without sales appear as gaps."):
-        granularity = st.segmented_control("Time grain", list(PERIODS), default="Daily",
-                                           selection_mode="single", label_visibility="collapsed")
+        granularity = st.segmented_control(
+            "Time grain", list(PERIODS), default="Daily", selection_mode="single", label_visibility="collapsed"
+        )
         trend = period_trend(lines, report.scope, granularity or "Daily")
         fig = charts.dual_axis(
-            trend["date"], trend["net_sales_cents"] / 100, trend["orders"],
-            primary_name=f"Net sales ({currency})", secondary_name="Distinct orders",
-            left_prefix=f"{currency} ", range_slider=True,
+            trend["date"],
+            trend["net_sales_cents"] / 100,
+            trend["orders"],
+            primary_name=f"Net sales ({currency})",
+            secondary_name="Distinct orders",
+            left_prefix=f"{currency} ",
+            range_slider=True,
         )
         charts.plot(fig, "sales_revenue", 335)
     with right:
@@ -52,8 +73,11 @@ def render(report: Report) -> pd.DataFrame:
         with search:
             query = st.text_input("Search dates or weekdays", placeholder="e.g. 2023-12 or Friday")
         with status:
-            speed = st.selectbox("Velocity status", ["All", "Surging", "Normal", "Quiet"],
-                                 help="Surging exceeds 125% of median daily orders. Quiet is below 75%.")
+            speed = st.selectbox(
+                "Velocity status",
+                ["All", "Surging", "Normal", "Quiet"],
+                help="Surging exceeds 125% of median daily orders. Quiet is below 75%.",
+            )
         display = search_rows(daily.assign(weekday=daily["date"].dt.day_name()), query, ["date", "weekday"])
         if speed != "All":
             display = display.loc[display["velocity"].eq(speed)]

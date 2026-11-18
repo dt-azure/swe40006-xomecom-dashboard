@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import Callable
 
 import pandas as pd
 import streamlit as st
@@ -24,7 +24,11 @@ class Report:
 
     def lines(self, *, previous: bool = False) -> pd.DataFrame:
         scope = self.prior if previous else self.scope
-        return sample_scope(in_scope(self.snapshot.lines, scope), self.selection) if scope else self.snapshot.lines.iloc[:0]
+        return (
+            sample_scope(in_scope(self.snapshot.lines, scope), self.selection)
+            if scope
+            else self.snapshot.lines.iloc[:0]
+        )
 
     def mart(self, name: str) -> pd.DataFrame:
         return mart_in_scope(sample_scope(self.snapshot.marts[name], self.selection), self.scope)

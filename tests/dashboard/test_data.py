@@ -1,9 +1,7 @@
 import pandas as pd
 import pytest
-
 from datetime import date
 from decimal import Decimal
-
 from dashboard.components.tables import csv_text
 from dashboard.data.analytics import (
     DateScope, breakdown, daily_sales, in_scope, mart_in_scope, period_trend,

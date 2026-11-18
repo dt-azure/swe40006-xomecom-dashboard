@@ -1,7 +1,7 @@
-from datetime import date
-from importlib import import_module
 import json
 import os
+from datetime import date
+from importlib import import_module
 from pathlib import Path
 
 import pytest
@@ -31,7 +31,11 @@ def test_missing_database_configuration_is_displayed(monkeypatch):
     assert not app.exception
     assert "DASHBOARD_DATABASE_URL" in app.error[0].value
     assert [link.proto.label for link in app.get("page_link")] == [
-        "Overview", "Sales Trend", "Categories", "Geography", "Pipeline Health",
+        "Overview",
+        "Sales Trend",
+        "Categories",
+        "Geography",
+        "Pipeline Health",
     ]
 
 

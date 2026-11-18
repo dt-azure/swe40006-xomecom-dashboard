@@ -16,7 +16,7 @@ def sidebar(pages: list, selected) -> str:
         selection = data_scope_control()
         st.html(
             f'<div class="cp-environment">{icon("database")}<div>'
-            '<strong>PostgreSQL Gold</strong><span>Warehouse reporting</span></div></div>'
+            "<strong>PostgreSQL Gold</strong><span>Warehouse reporting</span></div></div>"
         )
     return selection
 

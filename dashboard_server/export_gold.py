@@ -91,8 +91,7 @@ def literal(text):
 
 def schema_sql(tables, docs, exported_at):
     out = [
-        "-- The gold schema of the xom-ecom pipeline, as exported on "
-        f"{exported_at} by dashboard_serve/export_gold.py.",
+        f"-- The gold schema of the xom-ecom pipeline, as exported on {exported_at} by dashboard_serve/export_gold.py.",
         "-- Generated: do not edit by hand. load_gold.py applies it to an empty gold schema.",
         "-- In the real warehouse these tables are built by dbt; constraints are not declared",
         "-- there either, so the grain of each table is given in its comment.",
@@ -111,9 +110,7 @@ def schema_sql(tables, docs, exported_at):
             out.append(f"COMMENT ON TABLE gold.{table} IS {literal(comment)};")
         for column, _type in columns:
             if col_docs.get(column):
-                out.append(
-                    f"COMMENT ON COLUMN gold.{table}.{column} IS {literal(col_docs[column])};"
-                )
+                out.append(f"COMMENT ON COLUMN gold.{table}.{column} IS {literal(col_docs[column])};")
         out.append("")
     return "\n".join(out)
 
@@ -148,21 +145,17 @@ def main():
                 " ORDER BY run_id DESC LIMIT 1"
             ).fetchone()
             latest_status = conn.execute(
-                "SELECT status FROM ops.pipeline_runs WHERE stage = 'transform'"
-                " ORDER BY run_id DESC LIMIT 1"
+                "SELECT status FROM ops.pipeline_runs WHERE stage = 'transform' ORDER BY run_id DESC LIMIT 1"
             ).fetchone()
             date_range = conn.execute(
-                "SELECT min(order_date), max(order_date),"
-                " count(*) FILTER (WHERE is_sample) FROM gold.fct_sales_lines"
+                "SELECT min(order_date), max(order_date), count(*) FILTER (WHERE is_sample) FROM gold.fct_sales_lines"
             ).fetchone()
 
             entries = []
             for table, columns in tables.items():
                 names = [c for c, _ in columns]
                 order = ORDER_BY.get(table) or names[:1]
-                query = sql.SQL(
-                    "COPY (SELECT {} FROM {} ORDER BY {}) TO STDOUT WITH (FORMAT csv, HEADER true)"
-                ).format(
+                query = sql.SQL("COPY (SELECT {} FROM {} ORDER BY {}) TO STDOUT WITH (FORMAT csv, HEADER true)").format(
                     sql.SQL(", ").join(sql.Identifier(c) for c in names),
                     sql.Identifier("gold", table),
                     sql.SQL(", ").join(sql.Identifier(c) for c in order),
@@ -186,10 +179,7 @@ def main():
                 print(f"  gold.{table}: {rows:,} rows -> {path.relative_to(ROOT)}")
 
     if latest_status and latest_status[0] != "success":
-        print(
-            f"warning: the latest transform run is '{latest_status[0]}';"
-            " gold is from the last successful one"
-        )
+        print(f"warning: the latest transform run is '{latest_status[0]}'; gold is from the last successful one")
     (HERE / "schema.sql").write_text(schema_sql(tables, dbt_docs(), exported_at.isoformat()))
     manifest = {
         "exported_at": exported_at.isoformat(),

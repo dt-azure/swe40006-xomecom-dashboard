@@ -28,7 +28,12 @@ def render(report: Report) -> pd.DataFrame:
             st.write(f"Latest sales-line ingestion: {last_ingestion:%Y-%m-%d %H:%M:%S} UTC")
         st.caption("Ingestion timestamps describe sales records. Transform status requires pipeline telemetry.")
         st.info("ETL run history and staleness alerts require a confirmed ops.pipeline_runs contract.")
-    with inventory, panel("pipeline_inventory", "Gold Table Inventory", "Whole-table row counts at the time of the warehouse check"):
+    with (
+        inventory,
+        panel(
+            "pipeline_inventory", "Gold Table Inventory", "Whole-table row counts at the time of the warehouse check"
+        ),
+    ):
         display = snapshot.table_counts.sort_values("table").reset_index(drop=True)
         table(display, height=344)
         download(display, "gold-inventory")

@@ -1,0 +1,85 @@
+# Local development stack: same image as the servers, plus a local PostgreSQL
+#
+#   docker compose up --build -d        start db, api, dashboard
+#   docker compose run --rm pipeline    run the pipeline once
+#   docker compose logs -f api          follow logs
+#   docker compose down                 stop (add -v to wipe the database)
+#
+# Settings come from .env (copy .env.example)
+
+x-app: &app
+  build: .
+  image: ecommerce-pipeline:local
+  env_file:
+    - path: .env
+      required: false
+  environment: &app-env
+    POSTGRES_HOST: db
+    POSTGRES_PORT: "5432"
+    SOURCE_API_URL: http://api:5000
+    SQLITE_PATH: /app/data/source.db
+  volumes:
+    - ./data:/app/data
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ecommerce}
+      POSTGRES_USER: ${POSTGRES_USER:-ecommerce}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-local-only}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    <<: *app
+    command: ["api"]
+    environment:
+      <<: *app-env
+      SOURCE_API_PORT: "5000"
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  dashboard:
+    <<: *app
+    command: ["dashboard"]
+    environment:
+      <<: *app-env
+      DASHBOARD_PORT: "8501"
+    ports:
+      - "8501:8501"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8501/_stcore/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  pipeline:
+    <<: *app
+    command: ["pipeline"]
+    profiles: ["jobs"]
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:

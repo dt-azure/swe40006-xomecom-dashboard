@@ -1,0 +1,219 @@
+version: 2
+
+# The dashboard contract. Renaming or removing a column, or changing a grain, is a breaking
+# change: coordinate with the dashboard owner first. Adding columns is fine. Every table carries
+# is_sample; showing, badging or hiding mock data is the dashboard's choice.
+
+models:
+  - name: dim_customer
+    description: >
+      One row per (source, customer_id), plus one unknown member per source (customer_key
+      '<source>|unknown', is_unknown = true, attributes NULL). Contact details stay in silver.
+    columns:
+      - name: customer_key
+        description: "'<source>|<customer_id>', or '<source>|unknown'."
+        data_tests: [unique, not_null]
+      - name: source
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['xom_ecom']
+      - name: customer_name
+        description: First and last name; NULL when both are missing.
+      - name: birth_year
+        description: Year of birth only; the full date stays in silver.
+      - name: is_sample
+        data_tests: [not_null]
+      - name: is_unknown
+        data_tests: [not_null]
+
+  - name: dim_product
+    description: One row per (source, product_code), plus one unknown member per source. Categories as the source has them.
+    columns:
+      - name: product_key
+        data_tests: [unique, not_null]
+      - name: source
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['xom_ecom']
+      - name: is_sample
+        data_tests: [not_null]
+      - name: is_unknown
+        data_tests: [not_null]
+
+  - name: dim_region
+    description: One row per (source, region_code) at city level, plus one unknown member per source.
+    columns:
+      - name: region_key
+        data_tests: [unique, not_null]
+      - name: source
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['xom_ecom']
+      - name: market
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Africa', 'Asia Pacific', 'Europe', 'LATAM', 'USCA']
+      - name: is_sample
+        data_tests: [not_null]
+      - name: is_unknown
+        data_tests: [not_null]
+
+  - name: dim_date
+    description: One row per calendar day from the first order_date to the current date. The 2024-to-demo gap has days but no sales.
+    columns:
+      - name: date_day
+        data_tests: [unique, not_null]
+
+  - name: fct_sales_lines
+    description: >
+      One row per sales line (source, row_id), with keys to every dimension, the measures,
+      discount_band, is_loss, currency and is_sample. Lines with a missing customer, product or
+      region point at that dimension's unknown member, so totals reconcile; they are re-linked
+      once the reference arrives. `sales` is before discount; net_sales is after.
+    columns:
+      - name: sales_line_key
+        description: "'<source>|<row_id>'."
+        data_tests: [unique, not_null]
+      - name: source
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['xom_ecom']
+      - name: row_id
+        data_tests: [not_null]
+      - name: order_date
+        description: Key to dim_date.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_date')
+                field: date_day
+      - name: customer_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_key
+      - name: product_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_key
+      - name: region_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_region')
+                field: region_key
+      - name: segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Consumer', 'Corporate', 'Self-Employed']
+      - name: sales
+        description: Amount before discount (unit price x quantity).
+      - name: pre_discount_amount
+        description: Amount before discount; equal to sales.
+      - name: discount_amount
+        description: sales x discount.
+      - name: net_sales
+        description: Amount after discount, sales x (1 - discount).
+      - name: profit
+        description: Profit after discount.
+      - name: discount_band
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['none', 'low', 'medium', 'high']
+      - name: currency
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['USD']
+      - name: is_sample
+        data_tests: [not_null]
+
+  - name: mart_discount_impact
+    description: >
+      Discount impact on profit. One row per order_month x category x discount_band x
+      is_sample. profit_margin = profit / net_sales. Carries line and order counts, averages
+      with medians, the loss share and the order_date range covered.
+    columns:
+      - name: is_sample
+        data_tests: [not_null]
+      - name: discount_band
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['none', 'low', 'medium', 'high']
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['order_month', 'category', 'discount_band', 'is_sample']
+
+  - name: mart_segment_pnl
+    description: >
+      Profit and loss by segment. One row per order_quarter x segment x is_sample, with gains
+      and losses split, loss-making lines and orders, order value and order profit as averages
+      and medians, and the order_date range covered.
+    columns:
+      - name: segment
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Consumer', 'Corporate', 'Self-Employed']
+      - name: is_sample
+        data_tests: [not_null]
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['order_quarter', 'segment', 'is_sample']
+
+  - name: mart_market_growth
+    description: >
+      Growth by market. One row per order_year x market x region x is_sample, with the change
+      against the previous calendar year for the same market, region and is_sample. A year
+      whose previous year has no data (the demo year) gets NULL changes.
+    columns:
+      - name: market
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['Africa', 'Asia Pacific', 'Europe', 'LATAM', 'USCA']
+      - name: is_sample
+        data_tests: [not_null]
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['order_year', 'market', 'region', 'is_sample']
+
+  - name: mart_customer_retention
+    description: >
+      Retention by first-order cohort. One row per cohort_month x months_since_first_order x
+      is_sample. Each is_sample slice is computed on its own (a customer's cohort is their first
+      order within the slice), so hiding sample rows leaves the real figures untouched.
+      retention_rate = active_customers / cohort_customers. Churn is not defined.
+    columns:
+      - name: cohort_month
+        data_tests: [not_null]
+      - name: months_since_first_order
+        data_tests: [not_null]
+      - name: is_sample
+        data_tests: [not_null]
+    data_tests:
+      - unique_combination_of_columns:
+          arguments:
+            combination_of_columns: ['cohort_month', 'months_since_first_order', 'is_sample']

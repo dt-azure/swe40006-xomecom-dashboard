@@ -1,0 +1,33 @@
+# Connection profiles. Values come from environment variables (see .env.example); nothing secret
+# is stored here. DBT_TARGET picks the output: dev (local warehouse), ci (throwaway xom_ci
+# database with fixture bronze rows) or prod.
+xom_ecom:
+  target: "{{ env_var('DBT_TARGET', 'dev') }}"
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('DBT_PG_HOST', 'localhost') }}"
+      port: "{{ env_var('DBT_PG_PORT', '5434') | as_number }}"
+      user: "{{ env_var('DBT_PG_USER') }}"
+      password: "{{ env_var('DBT_PG_PASSWORD') }}"
+      dbname: "{{ env_var('DBT_PG_DBNAME', 'xom') }}"
+      schema: public
+      threads: 4
+    ci:
+      type: postgres
+      host: "{{ env_var('DBT_PG_HOST', 'localhost') }}"
+      port: "{{ env_var('DBT_PG_PORT', '5434') | as_number }}"
+      user: "{{ env_var('DBT_PG_USER') }}"
+      password: "{{ env_var('DBT_PG_PASSWORD') }}"
+      dbname: "{{ env_var('DBT_CI_DBNAME', 'xom_ci') }}"
+      schema: public
+      threads: 4
+    prod:
+      type: postgres
+      host: "{{ env_var('DBT_PG_HOST') }}"
+      port: "{{ env_var('DBT_PG_PORT') | as_number }}"
+      user: "{{ env_var('DBT_PG_USER') }}"
+      password: "{{ env_var('DBT_PG_PASSWORD') }}"
+      dbname: "{{ env_var('DBT_PG_DBNAME') }}"
+      schema: public
+      threads: 4

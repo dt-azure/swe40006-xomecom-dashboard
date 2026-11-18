@@ -1,0 +1,14 @@
+.git
+.env
+data/
+tests/
+**/__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+logs/
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+dbt/.user.yml
+dashboard_serve/

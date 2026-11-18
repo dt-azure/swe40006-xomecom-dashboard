@@ -1,0 +1,26 @@
+# dbt Core v1 project for the xom-ecom pipeline: bronze (source) -> silver -> gold.
+# Run from this folder; the connection comes from profiles.yml here (env vars, no secrets).
+name: xom_ecom
+version: "1.0.0"
+profile: xom_ecom
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages", "logs"]
+
+vars:
+  # Sources that get an "unknown" member in every dimension.
+  known_sources: ["xom_ecom"]
+  # Incremental models re-read bronze rows this far behind their newest row.
+  incremental_lookback_minutes: 10
+
+models:
+  xom_ecom:
+    silver:
+      +schema: silver
+      +materialized: incremental
+    gold:
+      +schema: gold
+      +materialized: table

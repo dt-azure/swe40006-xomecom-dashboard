@@ -1,0 +1,33 @@
+[project]
+name = "ecommerce-data-pipeline"
+version = "0.1.0"
+description = "SWE40006 e-commerce analytics: Source API, pipeline, and Streamlit dashboard"
+requires-python = ">=3.12,<3.13"
+
+# Dependencies live in requirements.txt / requirements-dev.txt so the
+# Dockerfile and CI install exactly the same set.
+
+[tool.pytest.ini_options]
+# dashboard/tests: temporary, until those tests move to tests/dashboard/
+testpaths = ["tests", "dashboard/tests"]
+# Lets tests do `from api import ...` / `from pipeline import ...`
+pythonpath = ["."]
+addopts = "-ra --strict-markers"
+markers = [
+    "integration: needs a running PostgreSQL (CI provides one; locally use docker compose)",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["data"]
+
+[tool.ruff.lint]
+# E/F: pycodestyle + pyflakes, I: import sorting, B: bugbear, UP: modern syntax
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["api", "pipeline", "dashboard"]
+
+[tool.ruff.format]
+quote-style = "double"

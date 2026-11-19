@@ -1,0 +1,82 @@
+# Overlay for local development and CI: the same server stack (compose.yml), plus a local
+# PostgreSQL standing in for RDS, and images built from this repository.
+#
+# Used through the root docker-compose.yml, so from the repository root:
+#   docker compose up -d --build
+#
+# The databases start empty: the pipeline services create their own warehouse tables, and
+# db-init creates xom_source with empty source tables. To load the real data, see
+# data_pipeline/README.md.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: xom
+      POSTGRES_PASSWORD: xom
+      POSTGRES_DB: xom
+    ports:
+      - "127.0.0.1:${LOCAL_PG_PORT:-5434}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xom -d xom"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Creates xom_source and its (empty) tables, then exits. Safe to re-run.
+  db-init:
+    image: postgres:17-alpine
+    environment:
+      PGHOST: postgres
+      PGUSER: xom
+      PGPASSWORD: xom
+    volumes:
+      - ../data_pipeline/sql:/sql:ro
+    command:
+      - sh
+      - -ec
+      - |
+        psql -d xom -tAc "SELECT 1 FROM pg_database WHERE datname = 'xom_source'" | grep -q 1 \
+          || psql -d xom -c "CREATE DATABASE xom_source"
+        psql -d xom_source -v ON_ERROR_STOP=1 -q -f /sql/source_schema.sql
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api: &pipeline-local
+    build: ../data_pipeline
+    image: ${PIPELINE_IMAGE:-xom-pipeline:local}
+    environment:
+      APP_ENV: local
+      DATABASE_URL: postgresql://xom:xom@postgres:5432/xom
+      SOURCE_DATABASE_URL: postgresql://xom:xom@postgres:5432/xom_source
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+      db-init:
+        condition: service_completed_successfully
+
+  consumer:
+    <<: *pipeline-local
+
+  poller:
+    <<: *pipeline-local
+
+  transform-runner:
+    <<: *pipeline-local
+
+  dashboard:
+    build:
+      context: ..
+      dockerfile: deploy/dashboard.Dockerfile
+    image: ${DASHBOARD_IMAGE:-xom-dashboard:local}
+    # Replaces the server's port 80 mapping
+    ports: !override
+      - "${DASHBOARD_PORT:-8501}:8501"
+    environment:
+      APP_ENV: local
+      DASHBOARD_DATABASE_URL: postgresql://xom:xom@postgres:5432/xom
+    depends_on:
+      postgres:
+        condition: service_healthy

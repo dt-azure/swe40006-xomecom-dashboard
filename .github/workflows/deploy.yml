@@ -1,0 +1,120 @@
+# Deploys one release to one server. Called by ci.yml after every merge to main
+# (test, then production), or run by hand from the Actions tab to redeploy or roll back
+# to any earlier release tag.
+#
+# Needs GitHub environments "test" and "production" (Settings -> Environments), each with:
+#   secrets    SSH_HOST         public IP of the server
+#              SSH_USER         ec2-user
+#              SSH_PRIVATE_KEY  the whole .pem file
+#              SSH_KNOWN_HOSTS  optional: the server's host key line (ssh-keyscan <ip>);
+#                               without it the key is accepted on first contact
+#   variables  APP_URL          optional public address to check after deploying;
+#                               production: http://<ALB DNS>. Test defaults to http://SSH_HOST.
+# "production" should have required reviewers, so a person approves each release.
+name: Deploy
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      release-tag:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Where to deploy
+        type: choice
+        options: [test, production]
+        required: true
+      release-tag:
+        description: "Release to deploy, e.g. sha-<full commit SHA> (see the Packages page)"
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.release-tag }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ vars.APP_URL }}
+    # One deploy per server at a time; a second one waits instead of cancelling the first
+    concurrency:
+      group: deploy-${{ inputs.environment }}
+      cancel-in-progress: false
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      RELEASE_TAG: ${{ inputs.release-tag }}
+      IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check settings
+        run: |
+          [[ -n "$SSH_HOST" && -n "$SSH_USER" ]] \
+            || { echo "::error::SSH_HOST and SSH_USER must be set in the '${{ inputs.environment }}' environment"; exit 1; }
+          [[ "$RELEASE_TAG" =~ ^sha-[0-9a-f]{40}$ ]] \
+            || { echo "::error::release-tag must look like sha-<40-character commit SHA>"; exit 1; }
+
+      - name: Set up SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          if [[ -n "$SSH_KNOWN_HOSTS" ]]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -T 15 -H "$SSH_HOST" > ~/.ssh/known_hosts
+          fi
+          cat > ~/.ssh/config <<EOF
+          Host server
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            ConnectTimeout 20
+            ServerAliveInterval 30
+          EOF
+
+      - name: Copy deploy files
+        run: |
+          ssh server 'mkdir -p /opt/xom'
+          scp deploy/compose.yml deploy/deploy.sh scripts/smoke_test.sh server:/opt/xom/
+
+      # Expanded on the runner on purpose; RELEASE_TAG was validated in "Check settings"
+      - name: Deploy
+        run: |
+          # shellcheck disable=SC2029
+          ssh server "bash /opt/xom/deploy.sh '$IMAGE_PREFIX' '$RELEASE_TAG'"
+
+      # From outside the server: through the load balancer for production
+      - name: Check public address
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        run: bash scripts/smoke_test.sh --dashboard "${APP_URL:-http://$SSH_HOST}"
+
+      - name: Show server status
+        if: failure()
+        run: |
+          ssh server 'cd /opt/xom && docker compose --env-file .env --env-file release.env -f compose.yml ps -a \
+            && docker compose --env-file .env --env-file release.env -f compose.yml logs --no-color --tail 80' || true
+
+      - name: Summary
+        if: always()
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        run: |
+          {
+            echo "### ${{ inputs.environment }}: ${{ job.status }}"
+            echo "Release \`$RELEASE_TAG\` at ${APP_URL:-http://$SSH_HOST}"
+          } >> "$GITHUB_STEP_SUMMARY"

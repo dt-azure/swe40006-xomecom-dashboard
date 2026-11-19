@@ -1,25 +1,28 @@
 [project]
-name = "ecommerce-data-pipeline"
+name = "xom-ecom"
 version = "0.1.0"
-description = "SWE40006 e-commerce analytics: Source API, pipeline, and Streamlit dashboard"
-requires-python = ">=3.12,<3.13"
+description = "SWE40006 e-commerce analytics: streaming data pipeline and Streamlit dashboard"
+requires-python = ">=3.13,<3.14"
 
-# Dependencies live in requirements.txt / requirements-dev.txt so the
-# Dockerfile and CI install exactly the same set.
+# Each component has its own dependencies and image:
+#   dashboard/requirements.txt      -> deploy/dashboard.Dockerfile
+#   data_pipeline/requirements.txt  -> data_pipeline/Dockerfile
+# This file holds the shared tool settings for the repository root. data_pipeline/ has its
+# own pyproject.toml, which ruff and pytest use for files inside that folder.
 
 [tool.pytest.ini_options]
-# dashboard/tests: temporary, until those tests move to tests/dashboard/
-testpaths = ["tests", "dashboard/tests"]
-# Lets tests do `from api import ...` / `from pipeline import ...`
+# Dashboard tests. The pipeline's tests run from data_pipeline/ (see CONTRIBUTING.md).
+testpaths = ["tests"]
+# Lets tests do `from dashboard import ...`
 pythonpath = ["."]
 addopts = "-ra --strict-markers"
 markers = [
-    "integration: needs a running PostgreSQL (CI provides one; locally use docker compose)",
+    "integration: needs a Gold database (set DASHBOARD_TEST_DATABASE_URL)",
 ]
 
 [tool.ruff]
 line-length = 120
-target-version = "py312"
+target-version = "py313"
 extend-exclude = ["data"]
 
 [tool.ruff.lint]
@@ -27,7 +30,7 @@ extend-exclude = ["data"]
 select = ["E", "F", "I", "B", "UP"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["api", "pipeline", "dashboard"]
+known-first-party = ["dashboard"]
 
 [tool.ruff.format]
 quote-style = "double"

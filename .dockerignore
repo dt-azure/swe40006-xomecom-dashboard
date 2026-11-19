@@ -1,4 +1,6 @@
-# Keep the image small (1 GB servers) and keep secrets out of it.
+# Build context for the dashboard image (deploy/dashboard.Dockerfile, built from the repo root).
+# The pipeline image is built from data_pipeline/ and uses data_pipeline/.dockerignore.
+# Keep the context small and secrets out of it.
 .git
 .github
 .env
@@ -8,6 +10,10 @@
 *.key
 
 data
+data_pipeline
+dashboard_server
+references
+tests
 *.db
 *.sqlite
 *.sqlite3
@@ -23,7 +29,6 @@ venv
 .coverage
 htmlcov
 
-tests
 docs
 *.md
 .vscode

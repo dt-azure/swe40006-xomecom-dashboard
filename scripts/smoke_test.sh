@@ -1,21 +1,36 @@
 #!/usr/bin/env bash
-# Smoke test
-#   bash scripts/smoke_test.sh [API_URL] [DASHBOARD_URL]
-#   bash scripts/smoke_test.sh http://localhost:5000 http://localhost:8501
+# Smoke test: is the stack up and answering?
+#
+#   bash scripts/smoke_test.sh [--api URL] [--dashboard URL]
+#
+#   Local / CI:   --api http://localhost:5000 --dashboard http://localhost:8501
+#   On a server:  --api http://127.0.0.1:5000 --dashboard http://127.0.0.1   (deploy.sh does this)
+#   From outside: --dashboard http://<test-ip>  or  --dashboard http://<alb-dns>
 #
 # Optional environment variables:
-#   EXPECTED_VERSION  commit SHA that /health must report
-#   SMOKE_RETRIES     attempts per check (default 20)
+#   EXPECTED_VERSION  release tag the API's /health must report (proves the new version is
+#                     the one running)
+#   SMOKE_RETRIES     attempts per check (default 30)
 #   SMOKE_DELAY       seconds between attempts (default 3)
-
+#
+# Note: Streamlit answers /_stcore/health even if the dashboard's Python code fails, so this
+# proves the service is up, not that every page works. The dashboard tests (AppTest) cover that.
 set -euo pipefail
 
-API_URL="${1:-http://localhost:5000}"
-DASHBOARD_URL="${2:-http://localhost:8501}"
-RETRIES="${SMOKE_RETRIES:-20}"
+API_URL=""
+DASHBOARD_URL=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --api) API_URL="${2%/}"; shift 2 ;;
+    --dashboard) DASHBOARD_URL="${2%/}"; shift 2 ;;
+    *) echo "usage: smoke_test.sh [--api URL] [--dashboard URL]" >&2; exit 64 ;;
+  esac
+done
+[[ -n "$API_URL" || -n "$DASHBOARD_URL" ]] || { echo "smoke_test.sh: nothing to check" >&2; exit 64; }
+
+RETRIES="${SMOKE_RETRIES:-30}"
 DELAY="${SMOKE_DELAY:-3}"
 EXPECTED_VERSION="${EXPECTED_VERSION:-}"
-
 failures=0
 
 # check <name> <url> [text the response must contain]
@@ -37,12 +52,14 @@ check() {
   return 0
 }
 
-check "API health"         "$API_URL/health"               '"status":"ok"'
-if [[ -n "$EXPECTED_VERSION" ]]; then
-  check "API version"      "$API_URL/health"               "$EXPECTED_VERSION"
+if [[ -n "$API_URL" ]]; then
+  check "API health" "$API_URL/health" '"status":"ok"'
+  [[ -n "$EXPECTED_VERSION" ]] && check "API version" "$API_URL/health" "\"version\":\"$EXPECTED_VERSION\""
 fi
-check "Dashboard health"   "$DASHBOARD_URL/_stcore/health" "ok"
-check "Dashboard page"     "$DASHBOARD_URL/"
+if [[ -n "$DASHBOARD_URL" ]]; then
+  check "Dashboard health" "$DASHBOARD_URL/_stcore/health" "ok"
+  check "Dashboard page" "$DASHBOARD_URL/"
+fi
 
 if ((failures > 0)); then
   echo "Smoke test failed: $failures check(s)"

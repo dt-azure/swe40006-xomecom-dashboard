@@ -1,5 +1,6 @@
-# Development and CI only. Not installed in the Docker image.
--r requirements.txt
+# Development and CI for the dashboard and repository tooling.
+# The pipeline has its own: data_pipeline/requirements-dev.txt
+-r dashboard/requirements.txt
 
 pytest>=8.3
 pytest-cov>=6.0

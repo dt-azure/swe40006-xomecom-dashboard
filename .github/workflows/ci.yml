@@ -226,6 +226,21 @@ jobs:
           EXPECTED_VERSION: ${{ env.RELEASE_TAG }}
         run: bash scripts/smoke_test.sh --api http://localhost:5000 --dashboard http://localhost:8501
 
+      # Streamlit's health check answers even when the app's Python code fails, so also run
+      # the dashboard script inside its container and fail on any exception. -P keeps the
+      # working directory off sys.path, exactly like `streamlit run`. With the empty CI
+      # database the app shows its "no Gold data" message, which is fine.
+      - name: Render dashboard page
+        run: |
+          docker compose exec -T dashboard python -P -c '
+          from pathlib import Path
+          from streamlit.testing.v1 import AppTest
+          at = AppTest.from_file(str(Path.cwd() / "dashboard" / "app.py"), default_timeout=60).run()
+          if at.exception:
+              raise SystemExit("Dashboard raised: " + at.exception[0].message)
+          print("Dashboard rendered without exceptions")
+          '
+
       # A service in a crash loop still shows "running" between restarts, so compare
       # restart counts across a window.
       - name: Check services stay up

@@ -1,6 +1,7 @@
 FROM python:3.13-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+# PYTHONPATH: lets `streamlit run dashboard/app.py` import the dashboard package
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app
 WORKDIR /app
 
 COPY dashboard/requirements.txt dashboard/requirements.txt

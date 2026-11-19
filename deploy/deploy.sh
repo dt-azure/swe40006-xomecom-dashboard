@@ -2,9 +2,12 @@
 # Runs ON the server, from /opt/xom (the deploy workflow copies it there with compose.yml
 # and smoke_test.sh).
 #
-#   bash /opt/xom/deploy.sh <image-prefix> <release-tag>
-#   bash /opt/xom/deploy.sh ghcr.io/dt-azure sha-1a2b3c4d...
+#   bash /opt/xom/deploy.sh <environment> <image-prefix> <release-tag>
+#   bash /opt/xom/deploy.sh production ghcr.io/dt-azure sha-1a2b3c4d...
 #   bash /opt/xom/deploy.sh rollback          back to the release before the current one
+#
+# <environment> is "test" or "production": the GitHub environment being deployed. The
+# settings in /opt/xom/.env must belong to it (see "Server settings" below).
 #
 # Pulls the two images for that release, restarts the stack, then checks that the new
 # version answers and that every long-running service stays up.
@@ -14,29 +17,58 @@ cd "$(dirname "$(readlink -f "$0")")"
 
 die() { echo "deploy: $*" >&2; exit 1; }
 compose() { docker compose --env-file .env --env-file release.env -f compose.yml "$@"; }
+# Value of KEY in a KEY=value file, without running the file as a script
+setting() { sed -n "s/^$1=//p" "${2:-.env}" | tail -n1; }
+
+[[ -f .env ]] || die "/opt/xom/.env is missing (see deploy/server.env.example)"
 
 # --- Which release -----------------------------------------------------------
 if [[ "${1:-}" == "rollback" ]]; then
   [[ -f release.env.prev ]] || die "no previous release recorded"
   cp release.env.prev release.env.next
+  env_name="$(setting DEPLOY_ENV release.env.next)"
+  env_name="${env_name:-$(setting APP_ENV)}" # releases recorded before DEPLOY_ENV existed
 else
-  [[ $# -eq 2 ]] || die "usage: deploy.sh <image-prefix> <release-tag> | rollback"
-  prefix="${1%/}" tag="$2"
+  [[ $# -eq 3 ]] || die "usage: deploy.sh <test|production> <image-prefix> <release-tag> | rollback"
+  env_name="$1" prefix="${2%/}" tag="$3"
   cat > release.env.next <<EOF
+DEPLOY_ENV=${env_name}
 RELEASE_TAG=${tag}
 PIPELINE_IMAGE=${prefix}/xom-pipeline:${tag}
 DASHBOARD_IMAGE=${prefix}/xom-dashboard:${tag}
 EOF
 fi
-# shellcheck disable=SC1091
-tag="$(. ./release.env.next && echo "$RELEASE_TAG")"
+tag="$(setting RELEASE_TAG release.env.next)"
 
 # --- Server settings ---------------------------------------------------------
-[[ -f .env ]] || die "/opt/xom/.env is missing (see deploy/server.env.example)"
+# The settings must belong to the environment being deployed. This catches a .env copied
+# from the other server, e.g. production users pointed at the test databases. It relies on
+# the naming in the infra guide: users and databases are named xom_test_* / xom_prod_*.
+case "$env_name" in
+  test) mine=test other=prod ;;
+  production) mine=prod other=test ;;
+  *) die "environment must be test or production, got '${env_name}'" ;;
+esac
+
+app_env="$(setting APP_ENV)"
+[[ "$app_env" == "$env_name" ]] \
+  || die "APP_ENV in /opt/xom/.env is '${app_env}', but this is the ${env_name} deploy"
+
 for var in DATABASE_URL SOURCE_DATABASE_URL DASHBOARD_DATABASE_URL; do
-  grep -Eq "^${var}=.+" .env || die "${var} is not set in /opt/xom/.env"
+  url="$(setting "$var")"
+  [[ -n "$url" ]] || die "${var} is not set in /opt/xom/.env"
+  rest="${url#*://}"
+  user="${rest%%@*}" user="${user%%:*}"
+  db="${rest#*/}" db="${db%%\?*}"
+  for name in "$user" "$db"; do
+    if [[ "$name" == *"_${other}"* || "$name" != *"_${mine}"* ]]; then
+      die "${var} uses user '${user}' and database '${db}', but this is the ${env_name} server: both names should contain '_${mine}' (check /opt/xom/.env)"
+    fi
+  done
 done
-dashboard_port="$(sed -n 's/^DASHBOARD_PORT=//p' .env | tail -n1)"
+echo "PASS  Settings belong to ${env_name}"
+
+dashboard_port="$(setting DASHBOARD_PORT)"
 dashboard_port="${dashboard_port:-80}"
 
 # --- Deploy ------------------------------------------------------------------

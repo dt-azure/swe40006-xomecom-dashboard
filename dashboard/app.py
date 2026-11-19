@@ -7,6 +7,12 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+# Streamlit adds this script's directory to sys.path. Also expose the package root,
+# before the dashboard imports below (the image also sets PYTHONPATH).
+ROOT = str(Path(__file__).resolve().parent.parent)
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
 from dashboard.components.filters import comparison_control, date_controls, preserve_widget
 from dashboard.components.layout import load_theme
 from dashboard.components.navigation import brand, sidebar
@@ -14,11 +20,6 @@ from dashboard.components.report import Report, active_report
 from dashboard.data.analytics import DateScope, sample_scope
 from dashboard.data.postgres_provider import PostgresProvider
 from dashboard.data.provider import DataSourceError, Snapshot
-
-# Streamlit adds this script's directory to sys.path. Also expose the package root.
-ROOT = str(Path(__file__).resolve().parent.parent)
-if ROOT not in sys.path:
-    sys.path.insert(0, ROOT)
 
 VIEWS = (
     ("overview", "Overview", "dashboard"),

@@ -115,7 +115,10 @@ After a merge to `main`, the same workflow:
 
 Each deploy copies `deploy/compose.yml`, `deploy/deploy.sh` and `scripts/smoke_test.sh` to
 `/opt/xom` on the server and runs `deploy.sh`, which pulls the images, restarts the stack,
-checks the new version answers, and checks that no service is restarting.
+checks the new version answers, and checks that no service is restarting. Before
+any of that, it checks that `/opt/xom/.env` belongs to the server being deployed: `APP_ENV`
+must match, and every database user and database name must contain `_test` on the test
+server and `_prod` on production. A file copied from the other server stops the deploy.
 
 To roll back: Actions -> **Deploy** -> Run workflow, pick the environment and an earlier
 `sha-...` tag. On a server, `bash /opt/xom/deploy.sh rollback` switches to the release before

@@ -52,6 +52,7 @@ jobs:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_USER: ${{ secrets.SSH_USER }}
       RELEASE_TAG: ${{ inputs.release-tag }}
+      DEPLOY_ENV: ${{ inputs.environment }}
       IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}
     steps:
       - uses: actions/checkout@v7
@@ -60,6 +61,8 @@ jobs:
         run: |
           [[ -n "$SSH_HOST" && -n "$SSH_USER" ]] \
             || { echo "::error::SSH_HOST and SSH_USER must be set in the '${{ inputs.environment }}' environment"; exit 1; }
+          [[ "$DEPLOY_ENV" == test || "$DEPLOY_ENV" == production ]] \
+            || { echo "::error::environment must be test or production"; exit 1; }
           [[ "$RELEASE_TAG" =~ ^sha-[0-9a-f]{40}$ ]] \
             || { echo "::error::release-tag must look like sha-<40-character commit SHA>"; exit 1; }
 
@@ -91,11 +94,11 @@ jobs:
           ssh server 'mkdir -p /opt/xom'
           scp deploy/compose.yml deploy/deploy.sh scripts/smoke_test.sh server:/opt/xom/
 
-      # Expanded on the runner on purpose; RELEASE_TAG was validated in "Check settings"
+      # Expanded on the runner on purpose; both values were validated in "Check settings"
       - name: Deploy
         run: |
           # shellcheck disable=SC2029
-          ssh server "bash /opt/xom/deploy.sh '$IMAGE_PREFIX' '$RELEASE_TAG'"
+          ssh server "bash /opt/xom/deploy.sh '$DEPLOY_ENV' '$IMAGE_PREFIX' '$RELEASE_TAG'"
 
       # From outside the server: through the load balancer for production
       - name: Check public address

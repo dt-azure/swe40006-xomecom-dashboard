@@ -1,5 +1,5 @@
-# Runs on every `git commit` after a one-time `pre-commit install`.
-# CI runs the same checks, so skipping them locally only delays the failure.
+# Runs on every `git commit` after a one-time `pre-commit install`
+# CI runs the same checks
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0

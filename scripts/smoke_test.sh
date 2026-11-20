@@ -14,7 +14,8 @@
 #   SMOKE_DELAY       seconds between attempts (default 3)
 #
 # Note: Streamlit answers /_stcore/health even if the dashboard's Python code fails, so this
-# proves the service is up, not that every page works. The dashboard tests (AppTest) cover that.
+# proves the service is up, not that every page works
+# The dashboard tests (AppTest) are for that
 set -euo pipefail
 
 API_URL=""

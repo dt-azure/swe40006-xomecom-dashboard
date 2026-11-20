@@ -1,14 +1,10 @@
-# Full stack on your machine (and in CI): the server stack in deploy/compose.yml plus the
-# local overlay in deploy/compose.ci.yml (a local PostgreSQL, images built from this repo).
-#
 #   docker compose up -d --build                 start everything
 #   docker compose ps                            all services should be running or healthy
 #   bash scripts/smoke_test.sh --api http://localhost:5000 --dashboard http://localhost:8501
 #   docker compose logs -f transform-runner      follow one service
 #   docker compose down -v                       stop and wipe the local databases
 #
-# The dashboard is on http://localhost:8501 (set DASHBOARD_PORT to change it).
-# For pipeline-only work, data_pipeline/docker-compose.yml is still available.
+# The dashboard is on http://localhost:8501
 
 include:
   - path:

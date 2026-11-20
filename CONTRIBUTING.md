@@ -1,7 +1,5 @@
 # Contributing
 
-How we work in this repository. Read this before your first pull request.
-
 ## Repository layout
 
 ```
@@ -35,15 +33,14 @@ Rules:
 ## One-time setup
 
 You need Python 3.13, Git, and Docker. Create virtual environments inside the repository as
-`.venv` (gitignored). The examples use [uv](https://docs.astral.sh/uv/); plain `python -m venv`
-and `pip` work too.
+`.venv` (gitignored). The examples use uv; plain `python -m venv` and `pip` work too.
 
 ```bash
 git clone <repo-url>
 cd <repo>
 
 # Dashboard and repository tools (repo root)
-uv venv                              # reads .python-version, so you get 3.13
+uv venv
 uv pip install -r requirements-dev.txt
 uv run pre-commit install            # lint and a secret scan on every commit
 
@@ -60,7 +57,7 @@ or activate the venv first (Windows PowerShell: `.venv\Scripts\Activate.ps1`).
 
 ```bash
 # From the repo root
-uv run ruff check --fix .            # lint and auto-fix (covers data_pipeline/ too)
+uv run ruff check --fix .            # lint and auto-fix
 uv run ruff format .                 # format
 uv run pytest                        # dashboard tests
 

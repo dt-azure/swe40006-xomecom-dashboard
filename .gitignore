@@ -4,6 +4,7 @@
 !.env.example
 *.pem
 *.key
+server.env
 id_rsa*
 id_ed25519*
 .streamlit/secrets.toml

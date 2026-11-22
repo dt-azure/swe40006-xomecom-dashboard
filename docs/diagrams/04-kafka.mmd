@@ -1,0 +1,38 @@
+---
+title: 04 · Kafka
+---
+%% Mirrors the PNG/SVG of the same name. Render 16:9:
+%%   npx -y @mermaid-js/mermaid-cli -i <file>.mmd -o <file>-mermaid.png -w 1920 -H 1080 -b white -s 2
+flowchart LR
+    PROD["Producer: Raw data API<br/>acks=all · enable.idempotence=true<br/>linger.ms=5 · flush before each reply<br/>on failure: API answers 503"]
+    subgraph TOPIC["TOPIC raw.ecom_records · 3 partitions · replication 1"]
+        direction TB
+        P0[["P0 · offsets 0 … n"]]
+        P1[["P1 · offsets 0 … n"]]
+        P2[["P2 · offsets 0 … n"]]
+    end
+    CONS["Consumer group: bronze-loader<br/>1 member (bronze consumer)<br/>enable.auto.commit=false · auto.offset.reset=earliest<br/>batch ≤ 1,000 msgs or 2 s<br/>commit offsets after the DB commit"]
+    PROD -- "hash(key)" --> P0
+    PROD --> P1
+    PROD --> P2
+    P0 -- "poll" --> CONS
+    P1 --> CONS
+    P2 --> CONS
+    MSG["One message<br/>key: xom_ecom:sales_line:48213<br/>value: the JSON record envelope<br/>same key → same partition → versions stay in order<br/>delivery: at least once; bronze ignores repeats"]
+    BROKER["Broker setup<br/>single broker, KRaft (no ZooKeeper)<br/>topic created by kafka-init; auto-create off<br/>kafka:19092 for containers · 127.0.0.1:9092 for the host"]
+
+    classDef proc fill:#fff8eb,stroke:#d48806,color:#1f2937
+    classDef store fill:#eaf2ff,stroke:#2f6fde,color:#1f2937
+    classDef stream fill:#e7f7ee,stroke:#15965a,color:#1f2937
+    classDef serve fill:#fdecef,stroke:#c23a57,color:#1f2937
+    classDef bronze fill:#f7e8da,stroke:#b4692b,color:#1f2937
+    classDef silver fill:#eef1f5,stroke:#7b8797,color:#1f2937
+    classDef gold fill:#fbf1cc,stroke:#c29408,color:#1f2937
+    classDef decision fill:#f3efff,stroke:#7c5cd6,color:#1f2937
+    classDef ctx fill:#f8fafc,stroke:#94a3b8,stroke-dasharray:6 4,color:#1f2937
+    classDef ok fill:#eaf8f0,stroke:#15965a,color:#1f2937
+    classDef fail fill:#fdeeee,stroke:#c2413b,color:#1f2937
+    class PROD,CONS proc
+    class P0,P1,P2 stream
+    class MSG,BROKER ctx
+    style TOPIC fill:#f2fbf6,stroke:#9fd8b8

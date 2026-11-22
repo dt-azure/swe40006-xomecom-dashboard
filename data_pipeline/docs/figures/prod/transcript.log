@@ -1,0 +1,187 @@
+
+===== 01-rds-prod-connection | Connection to RDS (xom_prod, xom_prod_source) through the SSH tunnel
+===== started 2026-11-19T14:33:09+00:00 | exit 0
+$ for db in xom_prod xom_prod_source; do psql -U xom_prod_app -d $db -c "select current_user, current_database(), inet_server_addr() as server_ip, split_part(version(), ' on ', 1) as version, has_database_privilege(current_database(), 'CREATE') as can_create;"; done
+ current_user | current_database |  server_ip  |     version     | can_create 
+--------------+------------------+-------------+-----------------+------------
+ xom_prod_app | xom_prod         | 172.31.0.30 | PostgreSQL 18.3 | t
+(1 row)
+
+ current_user | current_database |  server_ip  |     version     | can_create 
+--------------+------------------+-------------+-----------------+------------
+ xom_prod_app | xom_prod_source  | 172.31.0.30 | PostgreSQL 18.3 | t
+(1 row)
+
+
+===== 02-rds-prod-empty | Prod target databases before the restore
+===== started 2026-11-19T14:33:13+00:00 | exit 0
+$ psql -U xom_prod_app -d xom_prod -c "\dn" && psql -U xom_prod_app -d xom_prod_source -c "\dn"
+for db in xom_prod xom_prod_source; do echo -n "$db user tables: "; psql -U xom_prod_app -d $db -Atc "select count(*) from information_schema.tables where table_schema not in ('pg_catalog','information_schema');"; done
+      List of schemas
+  Name  |       Owner       
+--------+-------------------
+ public | pg_database_owner
+(1 row)
+
+      List of schemas
+  Name  |       Owner       
+--------+-------------------
+ public | pg_database_owner
+(1 row)
+
+xom_prod user tables: 0
+xom_prod_source user tables: 0
+
+===== 03-writers-stopped | Local pipeline writers still stopped (only postgres and kafka running)
+===== started 2026-11-19T14:33:21+00:00 | exit 0
+$ docker compose -p xom-ecom ps --format "table {{.Service}}\t{{.State}}"
+SERVICE    STATE
+kafka      running
+postgres   running
+
+===== 04-consistency | Pre-restore consistency check: Kafka drained, bronze complete, offsets at the source head
+===== started 2026-11-19T14:33:21+00:00 | exit 0
+$ docker compose -p xom-ecom exec -T kafka /opt/kafka/bin/kafka-consumer-groups.sh --bootstrap-server localhost:19092 --describe --all-groups 2>/dev/null | awk "/CURRENT-OFFSET/ || /raw.ecom_records/" | awk "{print \$1, \$2, \$3, \$4, \$5, \$6}" | column -t
+docker compose -p xom-ecom exec -T postgres psql -U xom -d xom -c "select (select count(*) from bronze.raw_records) as bronze_rows, (select count(*) from bronze.rejected_records) as rejected, (select max(finished_at) from ops.pipeline_runs where status = 'success') as last_successful_run;" -c "select source, entity, last_change_seq from ops.source_offsets order by entity;"
+docker compose -p xom-ecom exec -T postgres psql -U xom -d xom_source -c "select 'customer' as entity, max(change_seq) from e_commerce.customer union all select 'product', max(change_seq) from e_commerce.product union all select 'region', max(change_seq) from e_commerce.region union all select 'sales_line', max(change_seq) from e_commerce.sales_line order by 1;" -c "select sequencename, last_value from pg_sequences where schemaname = 'e_commerce';"
+GROUP          TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG
+bronze-loader  raw.ecom_records  1          33763           33763           0
+bronze-loader  raw.ecom_records  2          33614           33614           0
+bronze-loader  raw.ecom_records  0          33514           33514           0
+ bronze_rows | rejected |      last_successful_run      
+-------------+----------+-------------------------------
+      100889 |        0 | 2026-11-17 06:26:20.684289+00
+(1 row)
+
+  source  |   entity   | last_change_seq 
+----------+------------+-----------------
+ xom_ecom | customer   |           17415
+ xom_ecom | product    |           45771
+ xom_ecom | region     |           49599
+ xom_ecom | sales_line |          100889
+(4 rows)
+
+   entity   |  max   
+------------+--------
+ customer   |  17415
+ product    |  45771
+ region     |  49599
+ sales_line | 100889
+(4 rows)
+
+ sequencename | last_value 
+--------------+------------
+ change_seq   |     100889
+(1 row)
+
+
+===== 05-dump-artifact | Dump files promoted to prod: the same files restored and verified on RDS test
+===== started 2026-11-19T14:33:23+00:00 | exit 0
+$ ls -lhT ~/xom-dumps/*.dump | awk "{print \$5, \$6, \$7, \$8, \$9, \$NF}"
+shasum -a 256 ~/xom-dumps/*.dump
+for f in xom_source xom; do echo "== $f.dump: tables per schema"; pg_restore -l ~/xom-dumps/$f.dump | awk "\$4==\"TABLE\" && \$5!=\"DATA\" {print \$5}" | sort | uniq -c; done
+2.2M Nov 19 10:24:46 2026 /Users/phanhieu/xom-dumps/xom_source.dump
+15M Nov 19 10:24:48 2026 /Users/phanhieu/xom-dumps/xom.dump
+d99e98709244db1aec70587b3f9531b43f8203520b8f8059bc057ba0e4603ea3  /Users/phanhieu/xom-dumps/xom_source.dump
+5157b7a1b4bdec8954db8bc2c45e9d9cfe6303f92a27473a364674b71ff07bc7  /Users/phanhieu/xom-dumps/xom.dump
+== xom_source.dump: tables per schema
+   4 e_commerce
+== xom.dump: tables per schema
+   2 bronze
+   9 gold
+   2 ops
+   5 silver
+
+===== 06-restore-prod | Restore into RDS prod databases (xom_prod_source, xom_prod)
+===== started 2026-11-19T14:33:35+00:00 | exit 0
+$ time pg_restore -U xom_prod_app -d xom_prod_source --no-owner --no-acl --single-transaction --exit-on-error ~/xom-dumps/xom_source.dump && echo "xom_prod_source: restore OK"
+time pg_restore -U xom_prod_app -d xom_prod        --no-owner --no-acl --single-transaction --exit-on-error ~/xom-dumps/xom.dump        && echo "xom_prod: restore OK"
+
+real	0m14.199s
+user	0m0.043s
+sys	0m0.056s
+xom_prod_source: restore OK
+
+real	0m37.719s
+user	0m0.183s
+sys	0m0.272s
+xom_prod: restore OK
+
+===== 07-schemas-prod | Schemas on RDS prod after the restore
+===== started 2026-11-19T14:34:32+00:00 | exit 0
+$ psql -U xom_prod_app -d xom_prod -c "\dn" && psql -U xom_prod_app -d xom_prod_source -c "\dn"
+      List of schemas
+  Name  |       Owner       
+--------+-------------------
+ bronze | xom_prod_app
+ gold   | xom_prod_app
+ ops    | xom_prod_app
+ public | pg_database_owner
+ silver | xom_prod_app
+(5 rows)
+
+        List of schemas
+    Name    |       Owner       
+------------+-------------------
+ e_commerce | xom_prod_app
+ public     | pg_database_owner
+(2 rows)
+
+
+===== 08-row-counts-prod | Row counts per table: local vs RDS test vs RDS prod
+===== started 2026-11-19T14:34:36+00:00 | exit 0
+$ docker compose -p xom-ecom exec -T postgres psql -U xom -d xom        -At -F " " < ~/xom-dumps/counts.sql > /tmp/p_local_xom.txt
+docker compose -p xom-ecom exec -T postgres psql -U xom -d xom_source -At -F " " < ~/xom-dumps/counts.sql > /tmp/p_local_src.txt
+psql -U xom_test_app -d xom_test        -At -F " " < ~/xom-dumps/counts.sql > /tmp/p_test_xom.txt
+psql -U xom_test_app -d xom_test_source -At -F " " < ~/xom-dumps/counts.sql > /tmp/p_test_src.txt
+psql -U xom_prod_app -d xom_prod        -At -F " " < ~/xom-dumps/counts.sql > /tmp/p_prod_xom.txt
+psql -U xom_prod_app -d xom_prod_source -At -F " " < ~/xom-dumps/counts.sql > /tmp/p_prod_src.txt
+cat /tmp/p_local_src.txt /tmp/p_local_xom.txt > /tmp/p_l.txt; cat /tmp/p_test_src.txt /tmp/p_test_xom.txt > /tmp/p_t.txt; cat /tmp/p_prod_src.txt /tmp/p_prod_xom.txt > /tmp/p_p.txt
+join /tmp/p_l.txt /tmp/p_t.txt | join - /tmp/p_p.txt | awk "BEGIN{printf \"%-34s %9s %9s %9s  %s\n\", \"table\", \"local\", \"rds_test\", \"rds_prod\", \"match\"} {printf \"%-34s %9s %9s %9s  %s\n\", \$1, \$2, \$3, \$4, (\$2==\$3 && \$2==\$4?\"OK\":\"MISMATCH\")}"
+echo; diff /tmp/p_l.txt /tmp/p_p.txt && diff /tmp/p_t.txt /tmp/p_p.txt && echo "All $(wc -l < /tmp/p_p.txt | tr -d " ") tables match"
+table                                  local  rds_test  rds_prod  match
+e_commerce.customer                    17415     17415     17415  OK
+e_commerce.product                     28356     28356     28356  OK
+e_commerce.region                       3828      3828      3828  OK
+e_commerce.sales_line                  51290     51290     51290  OK
+bronze.raw_records                    100889    100889    100889  OK
+bronze.rejected_records                    0         0         0  OK
+gold.dim_customer                      17416     17416     17416  OK
+gold.dim_date                           2513      2513      2513  OK
+gold.dim_product                       28357     28357     28357  OK
+gold.dim_region                         3829      3829      3829  OK
+gold.fct_sales_lines                   51290     51290     51290  OK
+gold.mart_customer_retention            1167      1167      1167  OK
+gold.mart_discount_impact                960       960       960  OK
+gold.mart_market_growth                   93        93        93  OK
+gold.mart_segment_pnl                     48        48        48  OK
+ops.pipeline_runs                        106       106       106  OK
+ops.source_offsets                         4         4         4  OK
+silver.stg_customers                   17415     17415     17415  OK
+silver.stg_products                    28356     28356     28356  OK
+silver.stg_regions                      3828      3828      3828  OK
+silver.stg_sales_line_flags            51290     51290     51290  OK
+silver.stg_sales_lines                 51290     51290     51290  OK
+
+All 22 tables match
+
+===== 09-values-prod | Sequence, poller offsets and gold totals: local vs RDS test vs RDS prod
+===== started 2026-11-19T14:34:46+00:00 | exit 0
+$ Q1="select sequencename, last_value from pg_sequences where schemaname = 'e_commerce';"
+Q2="select entity, last_change_seq from ops.source_offsets order by entity;"
+Q3="select count(*) as lines, sum(sales) as sales, sum(net_sales) as net_sales, sum(profit) as profit from gold.fct_sales_lines;"
+echo "== change_seq sequence"; echo -n "local: "; docker compose -p xom-ecom exec -T postgres psql -U xom -d xom_source -At -c "$Q1"; echo -n "test:  "; psql -U xom_test_app -d xom_test_source -At -c "$Q1"; echo -n "prod:  "; psql -U xom_prod_app -d xom_prod_source -At -c "$Q1"
+echo "== ops.source_offsets"; echo "local: $(docker compose -p xom-ecom exec -T postgres psql -U xom -d xom -At -c "$Q2" | tr "\n" " ")"; echo "test:  $(psql -U xom_test_app -d xom_test -At -c "$Q2" | tr "\n" " ")"; echo "prod:  $(psql -U xom_prod_app -d xom_prod -At -c "$Q2" | tr "\n" " ")"
+echo "== gold.fct_sales_lines (lines | sales | net_sales | profit)"; echo -n "local: "; docker compose -p xom-ecom exec -T postgres psql -U xom -d xom -At -c "$Q3"; echo -n "test:  "; psql -U xom_test_app -d xom_test -At -c "$Q3"; echo -n "prod:  "; psql -U xom_prod_app -d xom_prod -At -c "$Q3"
+== change_seq sequence
+local: change_seq|100889
+test:  change_seq|100889
+prod:  change_seq|100889
+== ops.source_offsets
+local: customer|17415 product|45771 region|49599 sales_line|100889 
+test:  customer|17415 product|45771 region|49599 sales_line|100889 
+prod:  customer|17415 product|45771 region|49599 sales_line|100889 
+== gold.fct_sales_lines (lines | sales | net_sales | profit)
+local: 51290|6517674.00|5565259.31|1065413.58
+test:  51290|6517674.00|5565259.31|1065413.58
+prod:  51290|6517674.00|5565259.31|1065413.58

@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs><marker id="arr-hard" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker><marker id="arr-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arr-fail" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2413b"/></marker></defs>
+<rect width="1920" height="1080" fill="#ffffff"/>
+<text x="30" y="60" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="34" font-weight="800" fill="#1f2937">07 · Transform runner + dbt</text>
+<text x="30" y="94" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" fill="#4b5563">Every 30 s, runs dbt build when bronze has rows the last successful build has not seen. Runs never overlap.</text>
+<rect x="1250" y="34" width="28" height="24" rx="6" fill="#fff8eb" stroke="#d48806" stroke-width="1.8"/>
+<text x="1288.0" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Step</text>
+<polygon points="1348.8,32 1364.8,46 1348.8,60 1332.8,46" fill="#f3efff" stroke="#7c5cd6" stroke-width="1.8"/>
+<text x="1372.8" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Decision</text>
+<path d="M1452.3999999999999,40 L1452.3999999999999,54 A14,5 0 0 0 1480.3999999999999,54 L1480.3999999999999,40" fill="#eaf2ff" stroke="#2f6fde" stroke-width="1.8"/>
+<ellipse cx="1466.3999999999999" cy="40" rx="14" ry="5" fill="#eaf2ff" stroke="#2f6fde" stroke-width="1.8"/>
+<text x="1490.4" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Data store</text>
+<rect x="1586.3999999999999" y="34" width="28" height="24" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3"/>
+<text x="1624.4" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Other component</text>
+<line x1="1250" y1="82" x2="1290" y2="82" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1300.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Data or control flow</text>
+<line x1="1480" y1="82" x2="1520" y2="82" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<text x="1530.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Read-only or occasional</text>
+<line x1="1730" y1="82" x2="1770" y2="82" stroke="#c2413b" stroke-width="2.2" marker-end="url(#arr-fail)"/>
+<text x="1780.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Failure</text>
+<path d="M170.0,365.0 L292.0,365.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M532.0,365.0 L654.0,365.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M884.0,365.0 L1006.0,365.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1256.0,365.0 L1378.0,365.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1538.0,365.0 L1660.0,365.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1599.0" y="355.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">no</text>
+<rect x="30.0" y="325.0" width="140.0" height="80.0" rx="40.0" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="100.0" y="369.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Every 30 s</text>
+<rect x="292.0" y="300.0" width="240.0" height="130.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="412.0" y="351.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Close interrupted runs</text>
+<text x="412.0" y="371.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">'running' → 'failed'</text>
+<text x="412.0" y="390.1" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">ops.pipeline_runs</text>
+<rect x="654.0" y="300.0" width="230.0" height="130.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="769.0" y="351.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Read the watermark</text>
+<text x="769.0" y="371.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">of the last successful run</text>
+<text x="769.0" y="390.1" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">ops.pipeline_runs</text>
+<rect x="1006.0" y="300.0" width="250.0" height="130.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="1131.0" y="360.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Read bronze high mark</text>
+<text x="1131.0" y="380.6" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">max(ingested_at)</text>
+<polygon points="1458.0,280.0 1538.0,365.0 1458.0,450.0 1378.0,365.0" fill="#f3efff" stroke="#7c5cd6" stroke-width="2" stroke-linejoin="round"/>
+<text x="1458.0" y="357.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Newer</text>
+<text x="1458.0" y="381.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">rows?</text>
+<rect x="1660.0" y="315.0" width="230.0" height="100.0" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="1775.0" y="360.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Wait for the next tick</text>
+<text x="1775.0" y="380.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">nothing recorded</text>
+<path d="M1026.0,162.0 L1026.0,238.0 A105.0,12 0 0 0 1236.0,238.0 L1236.0,162.0" fill="#f7e8da" stroke="#b4692b" stroke-width="2"/>
+<ellipse cx="1131.0" cy="162.0" rx="105.0" ry="12" fill="#f7e8da" stroke="#b4692b" stroke-width="2"/>
+<text x="1131.0" y="203.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">bronze</text>
+<text x="1131.0" y="222.8" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">raw_records</text>
+<path d="M1131.0,250.0 L1131.0,300.0" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<path d="M1458.0,450.0 L1458.0,498.0 Q1458.0,510.0 1446.0,510.0 L437.0,510.0 Q425.0,510.0 425.0,522.0 L425.0,600.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1468.0" y="490.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">yes</text>
+<path d="M550.0,675.0 L733.3,675.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1033.3,675.0 L1216.7,675.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1376.7,675.0 L1560.0,675.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1468.3" y="665.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">yes</text>
+<rect x="300.0" y="600.0" width="250.0" height="150.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="425.0" y="661.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Record a run</text>
+<text x="425.0" y="681.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">status 'running'</text>
+<text x="425.0" y="700.1" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">ops.pipeline_runs</text>
+<rect x="733.3" y="600.0" width="300.0" height="150.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="883.3" y="651.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">dbt build</text>
+<text x="883.3" y="671.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">silver and gold models</text>
+<text x="883.3" y="690.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">+ 82 data tests</text>
+<text x="883.3" y="709.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">timeout 600 s</text>
+<polygon points="1296.7,585.0 1376.7,675.0 1296.7,765.0 1216.7,675.0" fill="#f3efff" stroke="#7c5cd6" stroke-width="2" stroke-linejoin="round"/>
+<text x="1296.7" y="667.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">All</text>
+<text x="1296.7" y="691.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">passed?</text>
+<rect x="1560.0" y="600.0" width="330.0" height="150.0" rx="12" fill="#eaf8f0" stroke="#15965a" stroke-width="2"/>
+<text x="1725.0" y="651.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Record 'success'</text>
+<text x="1725.0" y="671.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">new watermark = the bronze</text>
+<text x="1725.0" y="690.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">high mark read before dbt</text>
+<text x="1725.0" y="709.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">rows_loaded = new rows</text>
+<path d="M1296.7,765.0 L1296.7,880.0" fill="none" stroke="#c2413b" stroke-width="2.2" marker-end="url(#arr-fail)"/>
+<text x="1304.7" y="860.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#7f1d1d" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">no</text>
+<rect x="1106.7" y="880.0" width="380.0" height="130.0" rx="12" fill="#fdeeee" stroke="#c2413b" stroke-width="2"/>
+<text x="1296.7" y="921.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Record 'failed'</text>
+<text x="1296.7" y="941.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">no new watermark; dbt summary</text>
+<text x="1296.7" y="960.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">and failing tests in message;</text>
+<text x="1296.7" y="979.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">retried on the next tick</text>
+<path d="M733.3,872.0 L733.3,958.0 A70.0,12 0 0 0 873.3,958.0 L873.3,872.0" fill="#eef1f5" stroke="#7b8797" stroke-width="2"/>
+<ellipse cx="803.3" cy="872.0" rx="70.0" ry="12" fill="#eef1f5" stroke="#7b8797" stroke-width="2"/>
+<text x="803.3" y="927.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">silver</text>
+<path d="M893.3,872.0 L893.3,958.0 A70.0,12 0 0 0 1033.3,958.0 L1033.3,872.0" fill="#fbf1cc" stroke="#c29408" stroke-width="2"/>
+<ellipse cx="963.3" cy="872.0" rx="70.0" ry="12" fill="#fbf1cc" stroke="#c29408" stroke-width="2"/>
+<text x="963.3" y="927.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">gold</text>
+<path d="M803.3,750.0 L803.3,860.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M963.3,750.0 L963.3,860.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="875.3" y="830.0" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#374151" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">builds</text>
+<rect x="30.0" y="600.0" width="240.0" height="242.0" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="48.0" y="631.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#1f2937">Good to know</text>
+<text x="50.0" y="663.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#64748b">•</text>
+<text x="68.0" y="663.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">A failed test leaves</text>
+<text x="68.0" y="686.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">the old gold in place</text>
+<text x="50.0" y="709.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#64748b">•</text>
+<text x="68.0" y="709.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">The dashboard shows</text>
+<text x="68.0" y="732.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">data as stale after</text>
+<text x="68.0" y="755.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">2 min without success</text>
+<text x="50.0" y="778.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#64748b">•</text>
+<text x="68.0" y="778.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">Bronze rows landing</text>
+<text x="68.0" y="801.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">during a build trigger</text>
+<text x="68.0" y="824.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">the next cycle</text>
+</svg>

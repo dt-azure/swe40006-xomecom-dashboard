@@ -1,0 +1,40 @@
+---
+title: 08 · CommercePulse dashboard (Streamlit)
+---
+%% Mirrors the PNG/SVG of the same name. Render 16:9:
+%%   npx -y @mermaid-js/mermaid-cli -i <file>.mmd -o <file>-mermaid.png -w 1920 -H 1080 -b white -s 2
+flowchart LR
+    subgraph WH["WAREHOUSE · read-only"]
+        direction TB
+        LINES[("Sales lines<br/>fct_sales_lines joined to<br/>dim_customer, dim_product, dim_region")]
+        CAL[("Calendar bounds<br/>dim_date")]
+        MARTS[("Marts<br/>mart_segment_pnl · mart_customer_retention<br/>mart_discount_impact · mart_market_growth")]
+        OPS[("ops.pipeline_runs<br/>not read yet")]
+    end
+    READ["Read gold<br/>one REPEATABLE READ, read-only transaction<br/>+ row count per table<br/>DASHBOARD_DATABASE_URL"]
+    CACHE["Cache<br/>30 s in memory<br/>re-read on the next interaction after expiry"]
+    FILTERS["Filters<br/>Gold data: historical only, include sample rows, sample only<br/>Date range<br/>Comparison: previous year or period, or none"]
+    LINES & CAL & MARTS --> READ --> CACHE --> FILTERS
+    FILTERS --> P1["Overview<br/>KPIs, segment P&L, retention cohorts"]
+    FILTERS --> P2["Sales Trend<br/>daily net sales and orders"]
+    FILTERS --> P3["Categories<br/>categories, products, discount impact"]
+    FILTERS --> P4["Geography<br/>markets, countries, market growth"]
+    FILTERS --> P5["Pipeline Health<br/>readable tables, row counts, read time"]
+    P1 & P2 & P3 & P4 & P5 --> USERS(["Business users"])
+
+    classDef proc fill:#fff8eb,stroke:#d48806,color:#1f2937
+    classDef store fill:#eaf2ff,stroke:#2f6fde,color:#1f2937
+    classDef stream fill:#e7f7ee,stroke:#15965a,color:#1f2937
+    classDef serve fill:#fdecef,stroke:#c23a57,color:#1f2937
+    classDef bronze fill:#f7e8da,stroke:#b4692b,color:#1f2937
+    classDef silver fill:#eef1f5,stroke:#7b8797,color:#1f2937
+    classDef gold fill:#fbf1cc,stroke:#c29408,color:#1f2937
+    classDef decision fill:#f3efff,stroke:#7c5cd6,color:#1f2937
+    classDef ctx fill:#f8fafc,stroke:#94a3b8,stroke-dasharray:6 4,color:#1f2937
+    classDef ok fill:#eaf8f0,stroke:#15965a,color:#1f2937
+    classDef fail fill:#fdeeee,stroke:#c2413b,color:#1f2937
+    class LINES,CAL,MARTS gold
+    class OPS ctx
+    class READ,CACHE,FILTERS proc
+    class P1,P2,P3,P4,P5,USERS serve
+    style WH fill:#fefaec,stroke:#ecd88a

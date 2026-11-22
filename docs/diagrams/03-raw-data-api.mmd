@@ -1,0 +1,49 @@
+---
+title: 03 · Raw data API (Flask)
+---
+%% Mirrors the PNG/SVG of the same name. Render 16:9:
+%%   npx -y @mermaid-js/mermaid-cli -i <file>.mmd -o <file>-mermaid.png -w 1920 -H 1080 -b white -s 2
+flowchart LR
+    subgraph WRITE["POST /api/v1/records · WRITE PATH"]
+        direction LR
+        POLL["Source poller<br/>see 02"] --> BODY["Read the body<br/>one record or a list<br/>at most 5,000"]
+        BODY -- "> 5,000" --> E413["413 Too Large"]
+        BODY --> VALID{"All envelopes<br/>valid?"}
+        VALID -- "no" --> E400["400 Bad Request<br/>nothing published"]
+        VALID -- "yes" --> PUB["Publish each record<br/>key source:entity:record_id"]
+        PUB -- "produce" --> KAFKA{{"Kafka<br/>raw.ecom_records"}}
+        PUB --> FLUSH["Flush<br/>wait until Kafka has<br/>acknowledged each one"]
+        KAFKA -. "acks" .-> FLUSH
+        FLUSH --> ACK{"All<br/>acked?"}
+        ACK -- "yes" --> R202["202 Accepted<br/>{accepted: n}"]
+        ACK -- "no (within 15 s)" --> E503["503 Unavailable<br/>the poller retries"]
+    end
+    subgraph READP["GET /api/v1/records · READ PATH"]
+        direction LR
+        CLIENT["Client<br/>developer, tests"] --> QUERY["Read query<br/>source, entity, page,<br/>page_size (default 100, max 500)"]
+        QUERY --> BRONZE[("bronze.raw_records<br/>read-only")] --> R200["200 OK<br/>records, total, next_page"]
+    end
+    subgraph OTHER["OTHER ENDPOINTS"]
+        direction LR
+        SRCS["GET /api/v1/sources"] --> SRCR["xom_ecom: sales_line,<br/>customer, product, region"]
+        HEALTH["GET /health<br/>no Kafka or DB call"] --> HR["status: ok, version"]
+    end
+
+    classDef proc fill:#fff8eb,stroke:#d48806,color:#1f2937
+    classDef store fill:#eaf2ff,stroke:#2f6fde,color:#1f2937
+    classDef stream fill:#e7f7ee,stroke:#15965a,color:#1f2937
+    classDef serve fill:#fdecef,stroke:#c23a57,color:#1f2937
+    classDef bronze fill:#f7e8da,stroke:#b4692b,color:#1f2937
+    classDef silver fill:#eef1f5,stroke:#7b8797,color:#1f2937
+    classDef gold fill:#fbf1cc,stroke:#c29408,color:#1f2937
+    classDef decision fill:#f3efff,stroke:#7c5cd6,color:#1f2937
+    classDef ctx fill:#f8fafc,stroke:#94a3b8,stroke-dasharray:6 4,color:#1f2937
+    classDef ok fill:#eaf8f0,stroke:#15965a,color:#1f2937
+    classDef fail fill:#fdeeee,stroke:#c2413b,color:#1f2937
+    class POLL,CLIENT ctx
+    class BODY,PUB,FLUSH,QUERY,SRCS,HEALTH proc
+    class VALID,ACK decision
+    class KAFKA stream
+    class BRONZE bronze
+    class R202,R200,SRCR,HR ok
+    class E413,E400,E503 fail

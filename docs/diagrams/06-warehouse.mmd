@@ -1,0 +1,59 @@
+---
+title: 06 · Warehouse layers (Postgres xom)
+---
+%% Mirrors the PNG/SVG of the same name. Render 16:9:
+%%   npx -y @mermaid-js/mermaid-cli -i <file>.mmd -o <file>-mermaid.png -w 1920 -H 1080 -b white -s 2
+flowchart LR
+    subgraph BRONZE["BRONZE"]
+        RAW[("raw_records<br/>every record version<br/>jsonb payload, append-only")]
+        REJ[("rejected_records<br/>invalid messages")]
+        OPS["ops<br/>pipeline_runs · source_offsets<br/>bookkeeping, not dbt"]
+    end
+    subgraph SILVER["SILVER"]
+        SC["stg_customers<br/>latest version · incremental"]
+        SP["stg_products<br/>latest version · incremental"]
+        SR["stg_regions<br/>latest version · incremental"]
+        SS["stg_sales_lines<br/>latest version, typed,<br/>net_sales, discount_band · incremental"]
+        SF["stg_sales_line_flags<br/>unknown customer, product, region;<br/>multi-customer order · table, reads all four"]
+    end
+    subgraph GOLD["GOLD"]
+        DC["dim_customer<br/>per customer + unknown"]
+        DP["dim_product<br/>per product + unknown"]
+        DR["dim_region<br/>per city + unknown"]
+        DD["dim_date<br/>one row per day"]
+        F["fct_sales_lines<br/>one row per sales line,<br/>keys to every dimension · incremental"]
+        M1["mart_discount_impact<br/>month × category × band"]
+        M2["mart_segment_pnl<br/>quarter × segment"]
+        M3["mart_market_growth<br/>year × market × region"]
+        M4["mart_customer_retention<br/>cohort × months since"]
+    end
+    RAW --> SC & SP & SR & SS
+    SC & SP & SR & SS -.-> SF
+    SC --> DC
+    SP --> DP
+    SR --> DR
+    SS --> DD
+    SS --> F
+    DC & DP & DR --> F
+    F --> M1 & M2 & M3 & M4
+    DP -.-> M1
+    DR -.-> M3
+
+    classDef proc fill:#fff8eb,stroke:#d48806,color:#1f2937
+    classDef store fill:#eaf2ff,stroke:#2f6fde,color:#1f2937
+    classDef stream fill:#e7f7ee,stroke:#15965a,color:#1f2937
+    classDef serve fill:#fdecef,stroke:#c23a57,color:#1f2937
+    classDef bronze fill:#f7e8da,stroke:#b4692b,color:#1f2937
+    classDef silver fill:#eef1f5,stroke:#7b8797,color:#1f2937
+    classDef gold fill:#fbf1cc,stroke:#c29408,color:#1f2937
+    classDef decision fill:#f3efff,stroke:#7c5cd6,color:#1f2937
+    classDef ctx fill:#f8fafc,stroke:#94a3b8,stroke-dasharray:6 4,color:#1f2937
+    classDef ok fill:#eaf8f0,stroke:#15965a,color:#1f2937
+    classDef fail fill:#fdeeee,stroke:#c2413b,color:#1f2937
+    class RAW,REJ bronze
+    class OPS store
+    class SC,SP,SR,SS,SF silver
+    class DC,DP,DR,DD,F,M1,M2,M3,M4 gold
+    style BRONZE fill:#fcf5ee,stroke:#e9c9a8
+    style SILVER fill:#f6f8fa,stroke:#d3d9e1
+    style GOLD fill:#fefaec,stroke:#ecd88a

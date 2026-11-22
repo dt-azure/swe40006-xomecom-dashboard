@@ -1,0 +1,104 @@
+---
+title: Xóm E-Com · Data flow
+config:
+  flowchart:
+    curve: basis
+    nodeSpacing: 40
+    rankSpacing: 60
+---
+%% Landscape (left-to-right) data flow for the whole project; mirrors docs/data-flow.png.
+%% Render 16:9: npx -y @mermaid-js/mermaid-cli -i docs/data-flow.mmd -o docs/data-flow-mermaid.png -w 1920 -H 1080 -b white -s 2
+%% Solid arrow = live data path · dotted arrow = one-off, dev or read-only
+flowchart LR
+    subgraph SRC["SOURCE"]
+        SRCDB[("① xom_source<br/>sales_line<br/>customer<br/>product<br/>region")]
+    end
+
+    subgraph ING["STREAMING INGEST · ALWAYS ON"]
+        direction LR
+        POLLER["② Source poller<br/>every 5 s<br/>new rows only<br/>1,000 per batch"]
+        API["③ Raw data API<br/>Flask<br/>validates records<br/>202 or 503"]
+        KAFKA{{"④ Kafka<br/>raw.ecom_records<br/>1 broker · 3 partitions"}}
+        CONSUMER["⑤ Bronze consumer<br/>micro-batches<br/>DB commit, then offsets"]
+        POLLER -- "POST" --> API -- "publish" --> KAFKA -- "poll" --> CONSUMER
+    end
+
+    subgraph WH["WAREHOUSE · Postgres xom"]
+        direction LR
+        BRONZE[("⑥ bronze<br/>raw_records<br/>rejected_records<br/>append-only")]
+        SILVER[("⑦ silver<br/>stg_sales_lines<br/>stg_customers<br/>stg_products<br/>stg_regions<br/>stg_sales_line_flags")]
+        GOLD[("⑧ gold<br/>dim_customer<br/>dim_product<br/>dim_region<br/>dim_date<br/>fct_sales_lines<br/>mart_discount_impact<br/>mart_segment_pnl<br/>mart_market_growth<br/>mart_customer_retention")]
+        OPS[("ops<br/>pipeline_runs<br/>source_offsets")]
+        subgraph TR["TRANSFORM · EVERY 30 s"]
+            direction LR
+            RUNNER["Transform runner<br/>every 30 s, if<br/>bronze has new rows"]
+            DBT["dbt build<br/>silver → gold<br/>82 data tests"]
+            RUNNER -- "runs" --> DBT
+        end
+        BRONZE --> SILVER --> GOLD
+        BRONZE -- "new rows?" --> RUNNER
+        OPS <--> RUNNER
+        DBT -- "builds" --> SILVER
+        DBT -- "builds" --> GOLD
+    end
+
+    subgraph SERVE["SERVING"]
+        direction TB
+        DASH["⑨ CommercePulse<br/>Streamlit dashboard<br/>Overview · Sales<br/>Categories · Geography<br/>Pipeline health"]
+        USERS(["Business users"])
+        DASH --> USERS
+    end
+
+    subgraph PROD["PRODUCTION COPY · ONE-OFF MIGRATION"]
+        RDS[("AWS RDS (prod)<br/>xom_prod<br/>xom_prod_source")]
+    end
+
+    subgraph SNAP["GOLD SNAPSHOT FOR DASHBOARD DEVELOPMENT"]
+        direction LR
+        EXPORT["Export<br/>gold → CSV"]
+        FILES[/"Snapshot files<br/>CSV + schema"/]
+        LOAD["Load<br/>recreates gold"]
+        DEVDB[("Standalone<br/>gold DB")]
+        EXPORT -.-> FILES -.-> LOAD -.-> DEVDB
+    end
+
+    %% main path
+    SRCDB -- "rows" --> POLLER
+    CONSUMER -- "insert" --> BRONZE
+    GOLD -- "SQL" --> DASH
+
+    %% ops writes
+    POLLER -- "poller saves its high-water mark after each 202" --> OPS
+    CONSUMER -- "run log" --> OPS
+
+    %% read-only, dev and one-off paths
+    BRONZE -. "GET /api/v1/records · read-only, paged" .-> API
+    GOLD -. "export (one consistent read)" .-> EXPORT
+    DEVDB -. "dev data source" .-> DASH
+    SRC -. "pg_dump / restore of xom_source" .-> RDS
+    WH -. "pg_dump / restore of xom" .-> RDS
+
+    %% styling (same palette as the PNG)
+    classDef proc fill:#fff8eb,stroke:#d48806,color:#1f2937
+    classDef store fill:#eaf2ff,stroke:#2f6fde,color:#1f2937
+    classDef stream fill:#e7f7ee,stroke:#15965a,color:#1f2937
+    classDef serve fill:#fdecef,stroke:#c23a57,color:#1f2937
+    classDef bronze fill:#f7e8da,stroke:#b4692b,color:#1f2937
+    classDef silver fill:#eef1f5,stroke:#7b8797,color:#1f2937
+    classDef gold fill:#fbf1cc,stroke:#c29408,color:#1f2937
+
+    class POLLER,API,CONSUMER,RUNNER,DBT,EXPORT,LOAD proc
+    class SRCDB,OPS,FILES,DEVDB,RDS store
+    class KAFKA stream
+    class DASH,USERS serve
+    class BRONZE bronze
+    class SILVER silver
+    class GOLD gold
+
+    style SRC fill:#f8fafc,stroke:#d5dde8
+    style ING fill:#f4fbf7,stroke:#c9e9d6
+    style WH fill:#f5f8fe,stroke:#cddbf3
+    style TR fill:#fffcf5,stroke:#f0dcb0
+    style SERVE fill:#fef7f8,stroke:#f1cdd5
+    style PROD fill:#fafafa,stroke:#cbd5e1,stroke-dasharray:7 5
+    style SNAP fill:#fafafa,stroke:#cbd5e1,stroke-dasharray:7 5

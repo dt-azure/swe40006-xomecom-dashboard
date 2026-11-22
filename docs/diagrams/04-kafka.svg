@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs><marker id="arr-hard" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker><marker id="arr-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arr-fail" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2413b"/></marker></defs>
+<rect width="1920" height="1080" fill="#ffffff"/>
+<text x="30" y="60" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="34" font-weight="800" fill="#1f2937">04 · Kafka</text>
+<text x="30" y="94" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" fill="#4b5563">One broker, one topic. Records are keyed by source row, so every version of a row lands in the same partition, in order.</text>
+<rect x="1250" y="34" width="28" height="24" rx="6" fill="#fff8eb" stroke="#d48806" stroke-width="1.8"/>
+<text x="1288.0" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Step</text>
+<polygon points="1348.8,32 1364.8,46 1348.8,60 1332.8,46" fill="#f3efff" stroke="#7c5cd6" stroke-width="1.8"/>
+<text x="1372.8" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Decision</text>
+<path d="M1452.3999999999999,40 L1452.3999999999999,54 A14,5 0 0 0 1480.3999999999999,54 L1480.3999999999999,40" fill="#eaf2ff" stroke="#2f6fde" stroke-width="1.8"/>
+<ellipse cx="1466.3999999999999" cy="40" rx="14" ry="5" fill="#eaf2ff" stroke="#2f6fde" stroke-width="1.8"/>
+<text x="1490.4" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Data store</text>
+<rect x="1586.3999999999999" y="34" width="28" height="24" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3"/>
+<text x="1624.4" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Other component</text>
+<line x1="1250" y1="82" x2="1290" y2="82" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1300.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Data or control flow</text>
+<line x1="1480" y1="82" x2="1520" y2="82" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<text x="1530.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Read-only or occasional</text>
+<line x1="1730" y1="82" x2="1770" y2="82" stroke="#c2413b" stroke-width="2.2" marker-end="url(#arr-fail)"/>
+<text x="1780.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Failure</text>
+<rect x="30.0" y="300.0" width="400.0" height="244.0" rx="12" fill="#ffffff" stroke="#d48806" stroke-width="2"/>
+<path d="M30.0,344.0 L30.0,312.0 Q30.0,300.0 42.0,300.0 L418.0,300.0 Q430.0,300.0 430.0,312.0 L430.0,344.0 Z" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="46.0" y="329.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2937">Producer: Raw data API</text>
+<text x="46.0" y="373.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">acks</text>
+<text x="245.0" y="373.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">all</text>
+<text x="46.0" y="411.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">enable.idempotence</text>
+<text x="245.0" y="411.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">true</text>
+<text x="46.0" y="449.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">linger.ms</text>
+<text x="245.0" y="449.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">5</text>
+<text x="46.0" y="487.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">flush</text>
+<text x="245.0" y="487.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">before each reply</text>
+<text x="46.0" y="525.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">on failure</text>
+<text x="245.0" y="525.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">API answers 503</text>
+<rect x="1490.0" y="300.0" width="400.0" height="244.0" rx="12" fill="#ffffff" stroke="#d48806" stroke-width="2"/>
+<path d="M1490.0,344.0 L1490.0,312.0 Q1490.0,300.0 1502.0,300.0 L1878.0,300.0 Q1890.0,300.0 1890.0,312.0 L1890.0,344.0 Z" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="1506.0" y="329.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2937">Consumer group: bronze-loader</text>
+<text x="1506.0" y="373.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">members</text>
+<text x="1705.0" y="373.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">1 (bronze consumer)</text>
+<text x="1506.0" y="411.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">enable.auto.commit</text>
+<text x="1705.0" y="411.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">false</text>
+<text x="1506.0" y="449.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">auto.offset.reset</text>
+<text x="1705.0" y="449.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">earliest</text>
+<text x="1506.0" y="487.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">batch</text>
+<text x="1705.0" y="487.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">≤ 1,000 msgs or 2 s</text>
+<text x="1506.0" y="525.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">commit</text>
+<text x="1705.0" y="525.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">after the DB commit</text>
+<rect x="520.0" y="140.0" width="880.0" height="580.0" rx="18" fill="#f2fbf6" stroke="#9fd8b8" stroke-width="1.5"/>
+<text x="536.0" y="167.0" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="700" letter-spacing="0.9" fill="#64748b">TOPIC raw.ecom_records · 3 PARTITIONS · replication 1</text>
+<rect x="545" y="233" width="46" height="46" rx="8" fill="#15965a"/>
+<text x="568.0" y="263.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="800" fill="#ffffff">P0</text>
+<rect x="606" y="225" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="637.5" y="262.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">0</text>
+<rect x="676" y="225" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="707.5" y="262.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">1</text>
+<rect x="746" y="225" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="777.5" y="262.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">2</text>
+<rect x="816" y="225" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="847.5" y="262.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">3</text>
+<rect x="886" y="225" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="917.5" y="262.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">4</text>
+<rect x="956" y="225" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="987.5" y="262.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">5</text>
+<rect x="1026" y="225" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="1057.5" y="262.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">6</text>
+<rect x="1096" y="225" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="1127.5" y="262.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">7</text>
+<rect x="1166" y="225" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="1197.5" y="262.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">8</text>
+<rect x="1236" y="225" width="63" height="62" rx="6" fill="#ffffff" stroke="#b6e3c9" stroke-width="1.6"/>
+<rect x="1306" y="225" width="63" height="62" rx="6" fill="#ffffff" stroke="#b6e3c9" stroke-width="1.6"/>
+<rect x="545" y="413" width="46" height="46" rx="8" fill="#15965a"/>
+<text x="568.0" y="443.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="800" fill="#ffffff">P1</text>
+<rect x="606" y="405" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="637.5" y="442.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">0</text>
+<rect x="676" y="405" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="707.5" y="442.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">1</text>
+<rect x="746" y="405" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="777.5" y="442.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">2</text>
+<rect x="816" y="405" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="847.5" y="442.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">3</text>
+<rect x="886" y="405" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="917.5" y="442.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">4</text>
+<rect x="956" y="405" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="987.5" y="442.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">5</text>
+<rect x="1026" y="405" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="1057.5" y="442.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">6</text>
+<rect x="1096" y="405" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="1127.5" y="442.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">7</text>
+<rect x="1166" y="405" width="63" height="62" rx="6" fill="#ffffff" stroke="#b6e3c9" stroke-width="1.6"/>
+<rect x="1236" y="405" width="63" height="62" rx="6" fill="#ffffff" stroke="#b6e3c9" stroke-width="1.6"/>
+<rect x="1306" y="405" width="63" height="62" rx="6" fill="#ffffff" stroke="#b6e3c9" stroke-width="1.6"/>
+<rect x="545" y="593" width="46" height="46" rx="8" fill="#15965a"/>
+<text x="568.0" y="623.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="800" fill="#ffffff">P2</text>
+<rect x="606" y="585" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="637.5" y="622.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">0</text>
+<rect x="676" y="585" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="707.5" y="622.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">1</text>
+<rect x="746" y="585" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="777.5" y="622.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">2</text>
+<rect x="816" y="585" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="847.5" y="622.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">3</text>
+<rect x="886" y="585" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="917.5" y="622.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">4</text>
+<rect x="956" y="585" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="987.5" y="622.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">5</text>
+<rect x="1026" y="585" width="63" height="62" rx="6" fill="#d3f1e0" stroke="#15965a" stroke-width="1.6"/>
+<text x="1057.5" y="622.0" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="16" font-weight="400" fill="#0f5132">6</text>
+<rect x="1096" y="585" width="63" height="62" rx="6" fill="#ffffff" stroke="#b6e3c9" stroke-width="1.6"/>
+<rect x="1166" y="585" width="63" height="62" rx="6" fill="#ffffff" stroke="#b6e3c9" stroke-width="1.6"/>
+<rect x="1236" y="585" width="63" height="62" rx="6" fill="#ffffff" stroke="#b6e3c9" stroke-width="1.6"/>
+<rect x="1306" y="585" width="63" height="62" rx="6" fill="#ffffff" stroke="#b6e3c9" stroke-width="1.6"/>
+<text x="606.0" y="319.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#4b5563">offsets 0, 1, 2 … oldest to newest; each partition is an ordered log</text>
+<path d="M430.0,422.0 L473.0,422.0 Q485.0,422.0 485.0,410.0 L485.0,268.0 Q485.0,256.0 497.0,256.0 L545.0,256.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1376.0,256.0 L1428.0,256.0 Q1440.0,256.0 1440.0,268.0 L1440.0,410.0 Q1440.0,422.0 1452.0,422.0 L1490.0,422.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M430.0,422.0 L473.0,422.0 Q485.0,422.0 485.0,429.0 L485.0,429.0 Q485.0,436.0 497.0,436.0 L545.0,436.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1376.0,436.0 L1428.0,436.0 Q1440.0,436.0 1440.0,429.0 L1440.0,429.0 Q1440.0,422.0 1452.0,422.0 L1490.0,422.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M430.0,422.0 L473.0,422.0 Q485.0,422.0 485.0,434.0 L485.0,604.0 Q485.0,616.0 497.0,616.0 L545.0,616.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1376.0,616.0 L1428.0,616.0 Q1440.0,616.0 1440.0,604.0 L1440.0,434.0 Q1440.0,422.0 1452.0,422.0 L1490.0,422.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="485.0" y="237.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">hash(key)</text>
+<text x="1450.0" y="412.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">poll</text>
+<rect x="30.0" y="770.0" width="900.0" height="254.0" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<path d="M30.0,814.0 L30.0,782.0 Q30.0,770.0 42.0,770.0 L918.0,770.0 Q930.0,770.0 930.0,782.0 L930.0,814.0 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+<text x="46.0" y="799.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2937">One message</text>
+<text x="46.0" y="849.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="15.5" font-weight="600" fill="#1f2937">key</text>
+<text x="170.0" y="849.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="400" fill="#374151">xom_ecom:sales_line:48213</text>
+<text x="46.0" y="899.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="15.5" font-weight="600" fill="#1f2937">value</text>
+<text x="170.0" y="899.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="400" fill="#374151">the JSON record envelope (see 02)</text>
+<text x="46.0" y="949.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="15.5" font-weight="600" fill="#1f2937">order</text>
+<text x="170.0" y="949.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="400" fill="#374151">same key → same partition → versions stay in order</text>
+<text x="46.0" y="999.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="15.5" font-weight="600" fill="#1f2937">delivery</text>
+<text x="170.0" y="999.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="400" fill="#374151">at least once; bronze ignores repeats</text>
+<rect x="990.0" y="770.0" width="900.0" height="258.0" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="1008.0" y="801.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#1f2937">Broker setup</text>
+<text x="1010.0" y="850.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" font-weight="400" fill="#64748b">•</text>
+<text x="1028.0" y="850.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" font-weight="400" fill="#374151">Single broker in KRaft mode (no ZooKeeper)</text>
+<text x="1010.0" y="890.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" font-weight="400" fill="#64748b">•</text>
+<text x="1028.0" y="890.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" font-weight="400" fill="#374151">Topic created once by kafka-init; auto-create is off</text>
+<text x="1010.0" y="930.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" font-weight="400" fill="#64748b">•</text>
+<text x="1028.0" y="930.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" font-weight="400" fill="#374151">Containers connect on kafka:19092; the host only on 127.0.0.1:9092</text>
+<text x="1010.0" y="970.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" font-weight="400" fill="#64748b">•</text>
+<text x="1028.0" y="970.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" font-weight="400" fill="#374151">No Schema Registry, Kafka Connect or stream processing</text>
+<text x="1010.0" y="1010.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" font-weight="400" fill="#64748b">•</text>
+<text x="1028.0" y="1010.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" font-weight="400" fill="#374151">Replays come from Kafka retention or from xom_source</text>
+</svg>

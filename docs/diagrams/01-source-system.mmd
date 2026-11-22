@@ -1,0 +1,61 @@
+---
+title: 01 · Source system · xom_source
+---
+%% Mirrors the PNG/SVG of the same name. Render 16:9:
+%%   npx -y @mermaid-js/mermaid-cli -i <file>.mmd -o <file>-mermaid.png -w 1920 -H 1080 -b white -s 2
+%% Tables in schema e_commerce; references are logical only (no foreign keys).
+%% is_sample and change_seq are technical columns, never part of a record payload.
+erDiagram
+    sales_line {
+        integer row_id PK
+        varchar order_id
+        date order_date
+        varchar customer_id "→ customer"
+        varchar segment
+        varchar region_code "→ region"
+        varchar product_code "→ product"
+        integer quantity
+        numeric sales
+        numeric discount
+        numeric profit
+        boolean is_sample "technical"
+        bigint change_seq "technical"
+    }
+    customer {
+        varchar customer_id PK
+        varchar first_name
+        varchar last_name
+        date birth_date
+        varchar marital_status
+        varchar gender
+        varchar email_address
+        integer annual_income
+        varchar education_level
+        varchar occupation
+        varchar home_owner
+        boolean is_sample "technical"
+        bigint change_seq "technical"
+    }
+    product {
+        varchar product_code PK
+        varchar product
+        varchar category
+        varchar subcategory
+        boolean is_sample "technical"
+        bigint change_seq "technical"
+    }
+    region {
+        varchar region_code PK
+        varchar city
+        varchar state
+        varchar country
+        numeric country_latitude
+        numeric country_longitude
+        varchar region
+        varchar market
+        boolean is_sample "technical"
+        bigint change_seq "technical"
+    }
+    customer ||..o{ sales_line : "customer_id"
+    product ||..o{ sales_line : "product_code"
+    region ||..o{ sales_line : "region_code"

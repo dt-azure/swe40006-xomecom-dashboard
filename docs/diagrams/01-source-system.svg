@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs><marker id="arr-hard" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker><marker id="arr-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arr-fail" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2413b"/></marker></defs>
+<rect width="1920" height="1080" fill="#ffffff"/>
+<text x="30" y="60" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="34" font-weight="800" fill="#1f2937">01 · Source system: xom_source</text>
+<text x="30" y="94" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" fill="#4b5563">The operational database the pipeline reads: four tables in schema e_commerce, without foreign keys.</text>
+<rect x="1250" y="34" width="28" height="24" rx="6" fill="#fff8eb" stroke="#d48806" stroke-width="1.8"/>
+<text x="1288.0" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Step</text>
+<polygon points="1348.8,32 1364.8,46 1348.8,60 1332.8,46" fill="#f3efff" stroke="#7c5cd6" stroke-width="1.8"/>
+<text x="1372.8" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Decision</text>
+<path d="M1452.3999999999999,40 L1452.3999999999999,54 A14,5 0 0 0 1480.3999999999999,54 L1480.3999999999999,40" fill="#eaf2ff" stroke="#2f6fde" stroke-width="1.8"/>
+<ellipse cx="1466.3999999999999" cy="40" rx="14" ry="5" fill="#eaf2ff" stroke="#2f6fde" stroke-width="1.8"/>
+<text x="1490.4" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Data store</text>
+<rect x="1586.3999999999999" y="34" width="28" height="24" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3"/>
+<text x="1624.4" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Other component</text>
+<line x1="1250" y1="82" x2="1290" y2="82" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1300.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Data or control flow</text>
+<line x1="1480" y1="82" x2="1520" y2="82" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<text x="1530.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Read-only or occasional</text>
+<line x1="1730" y1="82" x2="1770" y2="82" stroke="#c2413b" stroke-width="2.2" marker-end="url(#arr-fail)"/>
+<text x="1780.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Failure</text>
+<rect x="30.0" y="132.0" width="345.0" height="405.0" rx="12" fill="#ffffff" stroke="#2f6fde" stroke-width="2"/>
+<path d="M30.0,176.0 L30.0,144.0 Q30.0,132.0 42.0,132.0 L363.0,132.0 Q375.0,132.0 375.0,144.0 L375.0,176.0 Z" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<text x="46.0" y="161.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2937">e_commerce.sales_line</text>
+<rect x="46.0" y="185.5" width="26" height="18" rx="4" fill="#fde68a"/>
+<text x="59.0" y="199.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#78350f">PK</text>
+<text x="80.0" y="199.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">row_id</text>
+<text x="359.0" y="199.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">integer</text>
+<text x="46.0" y="226.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">order_id</text>
+<text x="359.0" y="226.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="46.0" y="253.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">order_date</text>
+<text x="359.0" y="253.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">date</text>
+<text x="46.0" y="280.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">customer_id</text>
+<text x="359.0" y="280.5" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#2f6fde">→ customer</text>
+<text x="46.0" y="307.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">segment</text>
+<text x="359.0" y="307.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="46.0" y="334.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">region_code</text>
+<text x="359.0" y="334.5" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#2f6fde">→ region</text>
+<text x="46.0" y="361.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">product_code</text>
+<text x="359.0" y="361.5" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#2f6fde">→ product</text>
+<text x="46.0" y="388.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">quantity</text>
+<text x="359.0" y="388.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">integer</text>
+<text x="46.0" y="415.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">sales</text>
+<text x="359.0" y="415.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">numeric</text>
+<text x="46.0" y="442.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">discount</text>
+<text x="359.0" y="442.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">numeric</text>
+<text x="46.0" y="469.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">profit</text>
+<text x="359.0" y="469.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">numeric</text>
+<rect x="32.0" y="478.0" width="341.0" height="27.0" fill="#f3efff"/>
+<text x="46.0" y="496.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">is_sample</text>
+<text x="359.0" y="496.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#6d28d9">boolean</text>
+<rect x="32.0" y="505.0" width="341.0" height="27.0" fill="#f3efff"/>
+<text x="46.0" y="523.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">change_seq</text>
+<text x="359.0" y="523.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#6d28d9">bigint</text>
+<rect x="391.7" y="132.0" width="345.0" height="405.0" rx="12" fill="#ffffff" stroke="#2f6fde" stroke-width="2"/>
+<path d="M391.7,176.0 L391.7,144.0 Q391.7,132.0 403.7,132.0 L724.7,132.0 Q736.7,132.0 736.7,144.0 L736.7,176.0 Z" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<text x="407.7" y="161.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2937">e_commerce.customer</text>
+<rect x="407.7" y="185.5" width="26" height="18" rx="4" fill="#fde68a"/>
+<text x="420.7" y="199.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#78350f">PK</text>
+<text x="441.7" y="199.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">customer_id</text>
+<text x="720.7" y="199.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="407.7" y="226.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">first_name</text>
+<text x="720.7" y="226.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="407.7" y="253.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">last_name</text>
+<text x="720.7" y="253.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="407.7" y="280.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">birth_date</text>
+<text x="720.7" y="280.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">date</text>
+<text x="407.7" y="307.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">marital_status</text>
+<text x="720.7" y="307.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="407.7" y="334.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">gender</text>
+<text x="720.7" y="334.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="407.7" y="361.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">email_address</text>
+<text x="720.7" y="361.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="407.7" y="388.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">annual_income</text>
+<text x="720.7" y="388.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">integer</text>
+<text x="407.7" y="415.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">education_level</text>
+<text x="720.7" y="415.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="407.7" y="442.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">occupation</text>
+<text x="720.7" y="442.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="407.7" y="469.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">home_owner</text>
+<text x="720.7" y="469.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<rect x="393.7" y="478.0" width="341.0" height="27.0" fill="#f3efff"/>
+<text x="407.7" y="496.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">is_sample</text>
+<text x="720.7" y="496.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#6d28d9">boolean</text>
+<rect x="393.7" y="505.0" width="341.0" height="27.0" fill="#f3efff"/>
+<text x="407.7" y="523.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">change_seq</text>
+<text x="720.7" y="523.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#6d28d9">bigint</text>
+<rect x="753.3" y="132.0" width="345.0" height="216.0" rx="12" fill="#ffffff" stroke="#2f6fde" stroke-width="2"/>
+<path d="M753.3,176.0 L753.3,144.0 Q753.3,132.0 765.3,132.0 L1086.3,132.0 Q1098.3,132.0 1098.3,144.0 L1098.3,176.0 Z" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<text x="769.3" y="161.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2937">e_commerce.product</text>
+<rect x="769.3" y="185.5" width="26" height="18" rx="4" fill="#fde68a"/>
+<text x="782.3" y="199.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#78350f">PK</text>
+<text x="803.3" y="199.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">product_code</text>
+<text x="1082.3" y="199.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="769.3" y="226.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">product</text>
+<text x="1082.3" y="226.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="769.3" y="253.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">category</text>
+<text x="1082.3" y="253.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="769.3" y="280.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">subcategory</text>
+<text x="1082.3" y="280.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<rect x="755.3" y="289.0" width="341.0" height="27.0" fill="#f3efff"/>
+<text x="769.3" y="307.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">is_sample</text>
+<text x="1082.3" y="307.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#6d28d9">boolean</text>
+<rect x="755.3" y="316.0" width="341.0" height="27.0" fill="#f3efff"/>
+<text x="769.3" y="334.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">change_seq</text>
+<text x="1082.3" y="334.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#6d28d9">bigint</text>
+<rect x="1115.0" y="132.0" width="345.0" height="324.0" rx="12" fill="#ffffff" stroke="#2f6fde" stroke-width="2"/>
+<path d="M1115.0,176.0 L1115.0,144.0 Q1115.0,132.0 1127.0,132.0 L1448.0,132.0 Q1460.0,132.0 1460.0,144.0 L1460.0,176.0 Z" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<text x="1131.0" y="161.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2937">e_commerce.region</text>
+<rect x="1131.0" y="185.5" width="26" height="18" rx="4" fill="#fde68a"/>
+<text x="1144.0" y="199.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="10.5" font-weight="700" fill="#78350f">PK</text>
+<text x="1165.0" y="199.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">region_code</text>
+<text x="1444.0" y="199.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="1131.0" y="226.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">city</text>
+<text x="1444.0" y="226.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="1131.0" y="253.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">state</text>
+<text x="1444.0" y="253.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="1131.0" y="280.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">country</text>
+<text x="1444.0" y="280.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="1131.0" y="307.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">country_latitude</text>
+<text x="1444.0" y="307.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">numeric</text>
+<text x="1131.0" y="334.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">country_longitude</text>
+<text x="1444.0" y="334.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">numeric</text>
+<text x="1131.0" y="361.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">region</text>
+<text x="1444.0" y="361.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<text x="1131.0" y="388.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">market</text>
+<text x="1444.0" y="388.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#4b5563">varchar</text>
+<rect x="1117.0" y="397.0" width="341.0" height="27.0" fill="#f3efff"/>
+<text x="1131.0" y="415.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">is_sample</text>
+<text x="1444.0" y="415.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#6d28d9">boolean</text>
+<rect x="1117.0" y="424.0" width="341.0" height="27.0" fill="#f3efff"/>
+<text x="1131.0" y="442.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">change_seq</text>
+<text x="1444.0" y="442.5" text-anchor="end" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13.5" font-weight="400" fill="#6d28d9">bigint</text>
+<rect x="1500.0" y="132.0" width="390.0" height="174.0" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<path d="M1500.0,176.0 L1500.0,144.0 Q1500.0,132.0 1512.0,132.0 L1878.0,132.0 Q1890.0,132.0 1890.0,144.0 L1890.0,176.0 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+<text x="1516.0" y="161.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2937">Rows in the history</text>
+<text x="1516.0" y="201.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">sales_line</text>
+<text x="1874.0" y="201.0" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#4b5563">51,290</text>
+<text x="1516.0" y="231.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">customer</text>
+<text x="1874.0" y="231.0" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#4b5563">17,415</text>
+<text x="1516.0" y="261.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">product</text>
+<text x="1874.0" y="261.0" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#4b5563">28,356</text>
+<text x="1516.0" y="291.0" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">region</text>
+<text x="1874.0" y="291.0" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#4b5563">3,828</text>
+<rect x="1500.0" y="340.0" width="390.0" height="202.0" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="1518.0" y="371.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#1f2937">Reading the tables</text>
+<text x="1520.0" y="404.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#64748b">•</text>
+<text x="1538.0" y="404.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">PK  primary key</text>
+<text x="1520.0" y="428.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#64748b">•</text>
+<text x="1538.0" y="428.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">→  logical reference (no FK:</text>
+<text x="1538.0" y="452.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">orphan references are kept)</text>
+<text x="1520.0" y="476.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#64748b">•</text>
+<text x="1538.0" y="476.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">Purple rows: technical columns,</text>
+<text x="1538.0" y="500.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">never part of a record's payload</text>
+<text x="1520.0" y="524.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#64748b">•</text>
+<text x="1538.0" y="524.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">is_sample marks demo rows</text>
+<rect x="30.0" y="600.0" width="1860.0" height="450.0" rx="18" fill="#fafafa" stroke="#d5dde8" stroke-width="1.5"/>
+<text x="46.0" y="627.0" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="700" letter-spacing="0.9" fill="#64748b">HOW THE POLLER SEES NEW AND CHANGED ROWS</text>
+<rect x="60.0" y="702.0" width="190.0" height="80.0" rx="40.0" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="155.0" y="746.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">INSERT a row</text>
+<rect x="60.0" y="922.0" width="190.0" height="80.0" rx="40.0" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="155.0" y="966.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">UPDATE a row</text>
+<rect x="320.0" y="690.0" width="330.0" height="104.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="485.0" y="737.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">change_seq = nextval()</text>
+<text x="485.0" y="757.6" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">sequence e_commerce.change_seq</text>
+<rect x="320.0" y="910.0" width="330.0" height="104.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="485.0" y="957.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Trigger bump_change_seq</text>
+<text x="485.0" y="977.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">sets a new, higher change_seq</text>
+<rect x="760.0" y="790.0" width="300.0" height="120.0" rx="12" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<text x="910.0" y="835.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Every row version</text>
+<text x="910.0" y="856.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">has a unique change_seq,</text>
+<text x="910.0" y="875.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">higher than all before it</text>
+<rect x="1150.0" y="790.0" width="380.0" height="120.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="1340.0" y="836.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Poller reads the next batch</text>
+<text x="1340.0" y="856.6" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">WHERE change_seq &gt; mark</text>
+<text x="1340.0" y="874.6" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">ORDER BY change_seq LIMIT 1000</text>
+<rect x="1620.0" y="800.0" width="240.0" height="100.0" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="1740.0" y="845.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Source poller</text>
+<text x="1740.0" y="865.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">see 02</text>
+<path d="M250.0,742.0 L320.0,742.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M250.0,962.0 L320.0,962.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M650.0,742.0 L693.0,742.0 Q705.0,742.0 705.0,754.0 L705.0,818.0 Q705.0,830.0 717.0,830.0 L760.0,830.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M650.0,962.0 L693.0,962.0 Q705.0,962.0 705.0,950.0 L705.0,882.0 Q705.0,870.0 717.0,870.0 L760.0,870.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1060.0,850.0 L1150.0,850.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1105.0" y="840.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">indexed</text>
+<path d="M1530.0,850.0 L1620.0,850.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+</svg>

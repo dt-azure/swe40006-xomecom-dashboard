@@ -1,0 +1,27 @@
+---
+title: 01 · How the poller sees new and changed rows
+---
+%% Mirrors the PNG/SVG of the same name. Render 16:9:
+%%   npx -y @mermaid-js/mermaid-cli -i <file>.mmd -o <file>-mermaid.png -w 1920 -H 1080 -b white -s 2
+flowchart LR
+    INS(["INSERT a row"]) --> NEXT["change_seq = nextval()<br/>sequence e_commerce.change_seq"]
+    UPD(["UPDATE a row"]) --> TRIG["Trigger bump_change_seq<br/>sets a new, higher change_seq"]
+    NEXT --> VER["Every row version<br/>has a unique change_seq,<br/>higher than all before it"]
+    TRIG --> VER
+    VER -- "indexed" --> READ["Poller reads the next batch<br/>WHERE change_seq > mark<br/>ORDER BY change_seq LIMIT 1000"]
+    READ --> POLL["Source poller<br/>see 02"]
+
+    classDef proc fill:#fff8eb,stroke:#d48806,color:#1f2937
+    classDef store fill:#eaf2ff,stroke:#2f6fde,color:#1f2937
+    classDef stream fill:#e7f7ee,stroke:#15965a,color:#1f2937
+    classDef serve fill:#fdecef,stroke:#c23a57,color:#1f2937
+    classDef bronze fill:#f7e8da,stroke:#b4692b,color:#1f2937
+    classDef silver fill:#eef1f5,stroke:#7b8797,color:#1f2937
+    classDef gold fill:#fbf1cc,stroke:#c29408,color:#1f2937
+    classDef decision fill:#f3efff,stroke:#7c5cd6,color:#1f2937
+    classDef ctx fill:#f8fafc,stroke:#94a3b8,stroke-dasharray:6 4,color:#1f2937
+    classDef ok fill:#eaf8f0,stroke:#15965a,color:#1f2937
+    classDef fail fill:#fdeeee,stroke:#c2413b,color:#1f2937
+    class INS,UPD,POLL ctx
+    class NEXT,TRIG,READ proc
+    class VER store

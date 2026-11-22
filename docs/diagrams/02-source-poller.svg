@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs><marker id="arr-hard" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker><marker id="arr-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker><marker id="arr-fail" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2413b"/></marker></defs>
+<rect width="1920" height="1080" fill="#ffffff"/>
+<text x="30" y="60" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="34" font-weight="800" fill="#1f2937">02 · Source poller</text>
+<text x="30" y="94" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" fill="#4b5563">Every 5 s, sends each table's new and changed rows to the API. Reads xom_source; writes only its own marks in ops.</text>
+<rect x="1250" y="34" width="28" height="24" rx="6" fill="#fff8eb" stroke="#d48806" stroke-width="1.8"/>
+<text x="1288.0" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Step</text>
+<polygon points="1348.8,32 1364.8,46 1348.8,60 1332.8,46" fill="#f3efff" stroke="#7c5cd6" stroke-width="1.8"/>
+<text x="1372.8" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Decision</text>
+<path d="M1452.3999999999999,40 L1452.3999999999999,54 A14,5 0 0 0 1480.3999999999999,54 L1480.3999999999999,40" fill="#eaf2ff" stroke="#2f6fde" stroke-width="1.8"/>
+<ellipse cx="1466.3999999999999" cy="40" rx="14" ry="5" fill="#eaf2ff" stroke="#2f6fde" stroke-width="1.8"/>
+<text x="1490.4" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Data store</text>
+<rect x="1586.3999999999999" y="34" width="28" height="24" rx="6" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.8" stroke-dasharray="4 3"/>
+<text x="1624.4" y="52.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Other component</text>
+<line x1="1250" y1="82" x2="1290" y2="82" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1300.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Data or control flow</text>
+<line x1="1480" y1="82" x2="1520" y2="82" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<text x="1530.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Read-only or occasional</text>
+<line x1="1730" y1="82" x2="1770" y2="82" stroke="#c2413b" stroke-width="2.2" marker-end="url(#arr-fail)"/>
+<text x="1780.0" y="87.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Failure</text>
+<path d="M348.6,180.0 L348.6,266.0 A110.0,12 0 0 0 568.6,266.0 L568.6,180.0" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<ellipse cx="458.6" cy="180.0" rx="110.0" ry="12" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<text x="458.6" y="226.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">xom_source</text>
+<text x="458.6" y="245.8" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">4 tables</text>
+<path d="M1660.0,180.0 L1660.0,266.0 A110.0,12 0 0 0 1880.0,266.0 L1880.0,180.0" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<ellipse cx="1770.0" cy="180.0" rx="110.0" ry="12" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<text x="1770.0" y="225.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">ops.source_offsets</text>
+<text x="1770.0" y="246.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">mark per table</text>
+<rect x="1221.4" y="690.0" width="220.0" height="100.0" rx="12" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="1331.4" y="735.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Raw data API</text>
+<text x="1331.4" y="755.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">see 03</text>
+<rect x="1470.7" y="690.0" width="240.0" height="100.0" rx="12" fill="#fdeeee" stroke="#c2413b" stroke-width="2"/>
+<text x="1590.7" y="725.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Stop the cycle</text>
+<text x="1590.7" y="746.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">mark unchanged,</text>
+<text x="1590.7" y="765.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">retry next tick</text>
+<path d="M1750.0,470.0 L1750.0,407.0 Q1750.0,395.0 1738.0,395.0 L670.6,395.0 Q658.6,395.0 658.6,407.0 L658.6,470.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1204.3" y="386.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">repeat until the table is drained</text>
+<path d="M548.6,290.0 L548.6,470.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="538.6" y="380.0" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">rows</text>
+<path d="M1830.0,470.0 L1830.0,290.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1840.0" y="380.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">save</text>
+<path d="M1660.0,222.0 L1642.0,222.0 Q1630.0,222.0 1630.0,210.0 L1630.0,152.0 Q1630.0,140.0 1618.0,140.0 L620.6,140.0 Q608.6,140.0 608.6,152.0 L608.6,470.0" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<text x="1144.3" y="132.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">mark to start from</text>
+<path d="M837.9,605.0 L837.9,638.0 Q837.9,650.0 825.9,650.0 L341.3,650.0 Q329.3,650.0 329.3,638.0 L329.3,590.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="583.6" y="642.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">no: next table (after sales_line, wait for the next tick)</text>
+<path d="M1331.4,590.0 L1331.4,690.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)" marker-start="url(#arr-hard)"/>
+<text x="1339.4" y="650.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">batch / reply</text>
+<path d="M1560.7,595.0 L1560.7,690.0" fill="none" stroke="#c2413b" stroke-width="2.2" marker-end="url(#arr-fail)"/>
+<text x="1568.7" y="650.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#7f1d1d" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">no</text>
+<path d="M160.0,530.0 L224.3,530.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M434.3,530.0 L498.6,530.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M698.6,530.0 L762.9,530.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M912.9,530.0 L977.1,530.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="945.0" y="520.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">yes</text>
+<path d="M1167.1,530.0 L1231.4,530.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1431.4,530.0 L1495.7,530.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1625.7,530.0 L1690.0,530.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1657.9" y="520.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="400" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">yes</text>
+<rect x="30.0" y="490.0" width="130.0" height="80.0" rx="40.0" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="95.0" y="534.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Every 5 s</text>
+<rect x="224.3" y="470.0" width="210.0" height="120.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="329.3" y="515.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Next table</text>
+<text x="329.3" y="536.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">customer, product,</text>
+<text x="329.3" y="555.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">region, sales_line</text>
+<rect x="498.6" y="470.0" width="200.0" height="120.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="598.6" y="515.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Read next batch</text>
+<text x="598.6" y="536.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">change_seq &gt; mark</text>
+<text x="598.6" y="555.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">up to 1,000 rows</text>
+<polygon points="837.9,455.0 912.9,530.0 837.9,605.0 762.9,530.0" fill="#f3efff" stroke="#7c5cd6" stroke-width="2" stroke-linejoin="round"/>
+<text x="837.9" y="522.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Rows</text>
+<text x="837.9" y="546.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">left?</text>
+<rect x="977.1" y="470.0" width="190.0" height="120.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="1072.1" y="515.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Wrap each row</text>
+<text x="1072.1" y="536.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">in the record</text>
+<text x="1072.1" y="555.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">envelope</text>
+<rect x="1231.4" y="470.0" width="200.0" height="120.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="1331.4" y="525.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">POST the batch</text>
+<text x="1331.4" y="545.6" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">/api/v1/records</text>
+<polygon points="1560.7,455.0 1625.7,530.0 1560.7,605.0 1495.7,530.0" fill="#f3efff" stroke="#7c5cd6" stroke-width="2" stroke-linejoin="round"/>
+<text x="1560.7" y="534.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">202?</text>
+<rect x="1690.0" y="470.0" width="200.0" height="120.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="1790.0" y="515.8" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="18" font-weight="700" fill="#1f2937">Save the mark</text>
+<text x="1790.0" y="536.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">last change_seq</text>
+<text x="1790.0" y="555.3" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="400" fill="#374151">of the batch</text>
+<rect x="30.0" y="760.0" width="900.0" height="270.0" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<path d="M30.0,804.0 L30.0,772.0 Q30.0,760.0 42.0,760.0 L918.0,760.0 Q930.0,760.0 930.0,772.0 L930.0,804.0 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+<text x="46.0" y="789.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="17" font-weight="700" fill="#1f2937">Record envelope (one per source row)</text>
+<text x="46.0" y="827.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">source</text>
+<text x="230.0" y="827.5" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">xom_ecom</text>
+<text x="46.0" y="854.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">entity</text>
+<text x="230.0" y="854.5" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">sales_line, customer, product or region</text>
+<text x="46.0" y="881.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">record_id</text>
+<text x="230.0" y="881.5" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">the source key as text</text>
+<text x="46.0" y="908.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">event_at</text>
+<text x="230.0" y="908.5" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">order_date for sales lines, otherwise null</text>
+<text x="46.0" y="935.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">collected_at</text>
+<text x="230.0" y="935.5" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">when the poller read the row</text>
+<text x="46.0" y="962.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">is_sample</text>
+<text x="230.0" y="962.5" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">copied from the source row</text>
+<text x="46.0" y="989.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">source_version</text>
+<text x="230.0" y="989.5" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">the row's change_seq</text>
+<text x="46.0" y="1016.5" text-anchor="start" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="14" font-weight="600" fill="#1f2937">payload</text>
+<text x="230.0" y="1016.5" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">the source row as JSON, without technical columns</text>
+<rect x="1180.0" y="830.0" width="710.0" height="130.0" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+<text x="1198.0" y="861.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16" font-weight="700" fill="#1f2937">Why re-sending is safe</text>
+<text x="1200.0" y="894.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#64748b">•</text>
+<text x="1218.0" y="894.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">The mark moves only after a 202, so a failure re-sends the batch</text>
+<text x="1200.0" y="918.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#64748b">•</text>
+<text x="1218.0" y="918.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">A crash between the 202 and saving the mark also re-sends it</text>
+<text x="1200.0" y="942.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#64748b">•</text>
+<text x="1218.0" y="942.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="400" fill="#374151">Bronze ignores a record version it already has</text>
+</svg>

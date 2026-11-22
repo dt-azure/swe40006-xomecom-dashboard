@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+<defs><marker id="arr-hard" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker><marker id="arr-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+<rect width="1920" height="1080" fill="#ffffff"/>
+<text x="30" y="60" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="34" font-weight="800" fill="#1f2937">Xóm E-Com · Data flow</text>
+<text x="30" y="94" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="16.5" fill="#4b5563">Kafka streams source records into bronze continuously; dbt rebuilds silver and gold every 30 seconds for the dashboard.</text>
+<rect x="1335" y="38" width="28" height="24" rx="6" fill="#fff8eb" stroke="#d48806" stroke-width="1.8"/>
+<text x="1373" y="56" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#374151">Process</text>
+<path d="M1485,44 L1485,58 A14,5 0 0 0 1513,58 L1513,44" fill="#eaf2ff" stroke="#2f6fde" stroke-width="1.8"/>
+<ellipse cx="1499" cy="44" rx="14" ry="5" fill="#eaf2ff" stroke="#2f6fde" stroke-width="1.8"/>
+<text x="1523" y="56" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#374151">Data store</text>
+<polygon points="1641,38 1657,38 1663,50 1657,62 1641,62 1635,50" fill="#e7f7ee" stroke="#15965a" stroke-width="1.8"/>
+<text x="1673" y="56" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#374151">Stream</text>
+<line x1="1335" y1="86" x2="1375" y2="86" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1385" y="91" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#374151">Live data path</text>
+<line x1="1535" y1="86" x2="1575" y2="86" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<text x="1585" y="91" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#374151">One-off, dev or read-only</text>
+<rect x="18.0" y="128.0" width="184.0" height="662.0" rx="18" fill="#f8fafc" stroke="#d5dde8" stroke-width="1.5"/>
+<text x="34.0" y="155.0" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="700" letter-spacing="0.9" fill="#64748b">SOURCE</text>
+<rect x="220.8" y="128.0" width="783.2" height="662.0" rx="18" fill="#f4fbf7" stroke="#c9e9d6" stroke-width="1.5"/>
+<text x="236.8" y="155.0" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="700" letter-spacing="0.9" fill="#64748b">STREAMING INGEST · ALWAYS ON</text>
+<rect x="1022.8" y="128.0" width="661.5" height="662.0" rx="18" fill="#f5f8fe" stroke="#cddbf3" stroke-width="1.5"/>
+<text x="1038.8" y="155.0" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="700" letter-spacing="0.9" fill="#64748b">WAREHOUSE · Postgres xom</text>
+<rect x="1703.0" y="128.0" width="199.0" height="662.0" rx="18" fill="#fef7f8" stroke="#f1cdd5" stroke-width="1.5"/>
+<text x="1719.0" y="155.0" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="700" letter-spacing="0.9" fill="#64748b">SERVING</text>
+<rect x="1229.5" y="572.0" width="450.8" height="206.0" rx="18" fill="#fffcf5" stroke="#f0dcb0" stroke-width="1.5"/>
+<text x="1245.5" y="764.0" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="700" letter-spacing="0.9" fill="#64748b">TRANSFORM · EVERY 30 s</text>
+<rect x="220.8" y="812.0" width="814.0" height="248.0" rx="18" fill="#fafafa" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="8 6"/>
+<text x="236.8" y="1046.0" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="700" letter-spacing="0.9" fill="#64748b">PRODUCTION COPY · ONE-OFF MIGRATION</text>
+<rect x="1064.8" y="812.0" width="825.2" height="248.0" rx="18" fill="#fafafa" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="8 6"/>
+<text x="1080.8" y="1046.0" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" font-weight="700" letter-spacing="0.9" fill="#64748b">GOLD SNAPSHOT FOR DASHBOARD DEVELOPMENT</text>
+<path d="M190.0,407.5 L232.8,407.5" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="211.4" y="397.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">rows</text>
+<path d="M384.8,407.5 L427.5,407.5" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="406.1" y="397.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">POST</text>
+<path d="M579.5,407.5 L622.2,407.5" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="600.9" y="397.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">publish</text>
+<path d="M774.2,407.5 L817.0,407.5" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="795.6" y="397.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">poll</text>
+<path d="M992.0,407.5 L1034.8,407.5" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1013.4" y="397.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">insert</text>
+<path d="M1194.8,407.5 L1237.5,407.5" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1419.5,407.5 L1462.2,407.5" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1672.2,387.5 L1715.0,387.5" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1693.6" y="377.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">SQL</text>
+<path d="M308.8,515.0 L308.8,678.0 Q308.8,690.0 320.8,690.0 L1034.8,690.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="671.8" y="716.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">poller saves its high-water mark after each 202</text>
+<path d="M904.5,515.0 L904.5,616.0 Q904.5,628.0 916.5,628.0 L1034.8,628.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="969.6" y="619.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">run log</text>
+<path d="M1114.8,300.0 L1114.8,266.0 Q1114.8,254.0 1102.8,254.0 L515.5,254.0 Q503.5,254.0 503.5,266.0 L503.5,300.0" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<text x="809.1" y="245.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">GET /api/v1/records · read-only, paged</text>
+<path d="M1194.8,650.0 L1237.5,650.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)" marker-start="url(#arr-hard)"/>
+<path d="M1164.8,517.0 L1271.5,598.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1204.8" y="568.0" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">new rows?</text>
+<path d="M1419.5,658.0 L1462.2,658.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1440.9" y="648.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">runs</text>
+<path d="M1488.2,598.0 L1393.5,519.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1597.2,598.0 L1597.2,519.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<text x="1607.2" y="560.0" text-anchor="start" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">builds</text>
+<path d="M1802.5,300.0 L1802.5,236.0" fill="none" stroke="#475569" stroke-width="2.2" marker-end="url(#arr-hard)"/>
+<path d="M1672.2,452.5 L1683.8,452.5 Q1695.2,452.5 1695.2,464.5 L1695.2,840.0 Q1695.2,852.0 1683.2,852.0 L1174.8,852.0 Q1162.8,852.0 1162.8,862.0 L1162.8,872.0" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<text x="1469.0" y="845.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">export (one consistent read)</text>
+<path d="M1232.8,938.0 L1280.8,938.0" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<path d="M1448.8,938.0 L1496.8,938.0" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<path d="M1636.8,938.0 L1715.0,938.0" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<path d="M1802.5,868.0 L1802.5,517.0" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<text x="1792.5" y="650.0" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">dev data</text>
+<text x="1792.5" y="666.0" text-anchor="end" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">source</text>
+<path d="M110.0,790.0 L110.0,926.0 Q110.0,938.0 122.0,938.0 L512.8,938.0" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<text x="230.0" y="912.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">pg_dump / restore</text>
+<text x="230.0" y="928.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">of xom_source</text>
+<path d="M1040.8,790.0 L1040.8,926.0 Q1040.8,938.0 1028.8,938.0 L742.8,938.0" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-dasharray="7 5" marker-end="url(#arr-soft)"/>
+<text x="891.8" y="912.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">pg_dump / restore</text>
+<text x="891.8" y="928.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="13.5" fill="#334155" stroke="#ffffff" stroke-width="5" stroke-linejoin="round" paint-order="stroke">of xom</text>
+<path d="M30.0,300.0 L30.0,515.0 A80.0,12 0 0 0 190.0,515.0 L190.0,300.0" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<ellipse cx="110.0" cy="300.0" rx="80.0" ry="12" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<text x="110.0" y="383.9" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">xom_source</text>
+<text x="110.0" y="404.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">sales_line</text>
+<text x="110.0" y="422.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">customer</text>
+<text x="110.0" y="440.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">product</text>
+<text x="110.0" y="458.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">region</text>
+<rect x="232.8" y="300.0" width="152.0" height="215.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="308.8" y="382.7" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">Source poller</text>
+<text x="308.8" y="404.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">every 5 s</text>
+<text x="308.8" y="424.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">new rows only</text>
+<text x="308.8" y="444.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">1,000 per batch</text>
+<rect x="427.5" y="300.0" width="152.0" height="215.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="503.5" y="382.7" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">Raw data API</text>
+<text x="503.5" y="404.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">Flask</text>
+<text x="503.5" y="424.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">validates records</text>
+<text x="503.5" y="444.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">202 or 503</text>
+<polygon points="640.2,300.0 756.2,300.0 774.2,407.5 756.2,515.0 640.2,515.0 622.2,407.5" fill="#e7f7ee" stroke="#15965a" stroke-width="2" stroke-linejoin="round"/>
+<text x="698.2" y="383.7" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">Kafka</text>
+<text x="698.2" y="404.1" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">raw.ecom_records</text>
+<text x="698.2" y="423.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">1 broker</text>
+<text x="698.2" y="443.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">3 partitions</text>
+<rect x="817.0" y="300.0" width="175.0" height="215.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="904.5" y="382.7" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">Bronze consumer</text>
+<text x="904.5" y="404.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">micro-batches</text>
+<text x="904.5" y="424.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">DB commit,</text>
+<text x="904.5" y="444.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">then offsets</text>
+<path d="M1034.8,300.0 L1034.8,515.0 A80.0,12 0 0 0 1194.8,515.0 L1194.8,300.0" fill="#f7e8da" stroke="#b4692b" stroke-width="2"/>
+<ellipse cx="1114.8" cy="300.0" rx="80.0" ry="12" fill="#f7e8da" stroke="#b4692b" stroke-width="2"/>
+<text x="1114.8" y="391.9" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">bronze</text>
+<text x="1114.8" y="412.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">raw_records</text>
+<text x="1114.8" y="430.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">rejected_records</text>
+<text x="1114.8" y="449.7" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">append-only</text>
+<path d="M1237.5,300.0 L1237.5,515.0 A91.0,12 0 0 0 1419.5,515.0 L1419.5,300.0" fill="#eef1f5" stroke="#7b8797" stroke-width="2"/>
+<ellipse cx="1328.5" cy="300.0" rx="91.0" ry="12" fill="#eef1f5" stroke="#7b8797" stroke-width="2"/>
+<text x="1328.5" y="374.9" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">silver</text>
+<text x="1328.5" y="395.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">stg_sales_lines</text>
+<text x="1328.5" y="413.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">stg_customers</text>
+<text x="1328.5" y="431.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">stg_products</text>
+<text x="1328.5" y="449.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">stg_regions</text>
+<text x="1328.5" y="467.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">stg_sales_line_flags</text>
+<path d="M1462.2,282.0 L1462.2,533.0 A105.0,12 0 0 0 1672.2,533.0 L1672.2,282.0" fill="#fbf1cc" stroke="#c29408" stroke-width="2"/>
+<ellipse cx="1567.2" cy="282.0" rx="105.0" ry="12" fill="#fbf1cc" stroke="#c29408" stroke-width="2"/>
+<text x="1567.2" y="338.9" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">gold</text>
+<text x="1567.2" y="359.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">dim_customer</text>
+<text x="1567.2" y="377.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">dim_product</text>
+<text x="1567.2" y="395.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">dim_region</text>
+<text x="1567.2" y="413.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">dim_date</text>
+<text x="1567.2" y="431.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">fct_sales_lines</text>
+<text x="1567.2" y="449.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">mart_discount_impact</text>
+<text x="1567.2" y="467.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">mart_segment_pnl</text>
+<text x="1567.2" y="485.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">mart_market_growth</text>
+<text x="1567.2" y="503.3" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">mart_customer_retention</text>
+<rect x="1715.0" y="300.0" width="175.0" height="215.0" rx="12" fill="#fdecef" stroke="#c23a57" stroke-width="2"/>
+<text x="1802.5" y="362.7" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">CommercePulse</text>
+<text x="1802.5" y="384.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">Streamlit dashboard</text>
+<text x="1802.5" y="404.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">Overview · Sales</text>
+<text x="1802.5" y="424.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">Categories</text>
+<text x="1802.5" y="444.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">Geography</text>
+<text x="1802.5" y="464.5" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">Pipeline health</text>
+<rect x="1721.0" y="168.0" width="163.0" height="68.0" rx="34" fill="#fdecef" stroke="#c23a57" stroke-width="2"/>
+<text x="1802.5" y="207.2" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">Business users</text>
+<path d="M1034.8,600.0 L1034.8,696.0 A80.0,12 0 0 0 1194.8,696.0 L1194.8,600.0" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<ellipse cx="1114.8" cy="600.0" rx="80.0" ry="12" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<text x="1114.8" y="642.4" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">ops</text>
+<text x="1114.8" y="662.8" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">pipeline_runs</text>
+<text x="1114.8" y="680.8" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">source_offsets</text>
+<rect x="1237.5" y="598.0" width="182.0" height="118.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="1328.5" y="642.2" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">Transform runner</text>
+<text x="1328.5" y="664.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">every 30 s, if</text>
+<text x="1328.5" y="684.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">bronze has new rows</text>
+<rect x="1462.2" y="598.0" width="210.0" height="118.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="1567.2" y="642.2" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">dbt build</text>
+<text x="1567.2" y="664.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">silver → gold</text>
+<text x="1567.2" y="684.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">82 data tests</text>
+<rect x="1092.8" y="872.0" width="140.0" height="132.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="1162.8" y="933.2" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">Export</text>
+<text x="1162.8" y="955.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">gold → CSV</text>
+<path d="M1280.8,872.0 L1432.8,872.0 L1448.8,888.0 L1448.8,1004.0 L1280.8,1004.0 Z" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<path d="M1432.8,872.0 L1432.8,888.0 L1448.8,888.0" fill="none" stroke="#2f6fde" stroke-width="1.5"/>
+<text x="1364.8" y="933.2" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">Snapshot files</text>
+<text x="1364.8" y="955.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">CSV + schema</text>
+<rect x="1496.8" y="872.0" width="140.0" height="132.0" rx="12" fill="#fff8eb" stroke="#d48806" stroke-width="2"/>
+<text x="1566.8" y="933.2" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">Load</text>
+<text x="1566.8" y="955.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14.5" font-weight="400" fill="#374151">recreates gold</text>
+<path d="M1715.0,878.0 L1715.0,992.0 A87.5,12 0 0 0 1890.0,992.0 L1890.0,878.0" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<ellipse cx="1802.5" cy="878.0" rx="87.5" ry="12" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<text x="1802.5" y="934.4" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">Standalone</text>
+<text x="1802.5" y="960.4" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">gold DB</text>
+<path d="M512.8,878.0 L512.8,992.0 A115.0,12 0 0 0 742.8,992.0 L742.8,878.0" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<ellipse cx="627.8" cy="878.0" rx="115.0" ry="12" fill="#eaf2ff" stroke="#2f6fde" stroke-width="2"/>
+<text x="627.8" y="929.4" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="700" fill="#1f2937">AWS RDS (prod)</text>
+<text x="627.8" y="949.8" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">xom_prod</text>
+<text x="627.8" y="967.8" text-anchor="middle" font-family="'SF Mono', Menlo, Consolas, monospace" font-size="13" font-weight="500" fill="#4b5563">xom_prod_source</text>
+<circle cx="34.0" cy="294.0" r="14" fill="#1f2937"/>
+<text x="34.0" y="299.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">1</text>
+<circle cx="236.8" cy="304.0" r="14" fill="#1f2937"/>
+<text x="236.8" y="309.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">2</text>
+<circle cx="431.5" cy="304.0" r="14" fill="#1f2937"/>
+<text x="431.5" y="309.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">3</text>
+<circle cx="636.2" cy="304.0" r="14" fill="#1f2937"/>
+<text x="636.2" y="309.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">4</text>
+<circle cx="821.0" cy="304.0" r="14" fill="#1f2937"/>
+<text x="821.0" y="309.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">5</text>
+<circle cx="1038.8" cy="294.0" r="14" fill="#1f2937"/>
+<text x="1038.8" y="299.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">6</text>
+<circle cx="1241.5" cy="294.0" r="14" fill="#1f2937"/>
+<text x="1241.5" y="299.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">7</text>
+<circle cx="1466.2" cy="276.0" r="14" fill="#1f2937"/>
+<text x="1466.2" y="281.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">8</text>
+<circle cx="1719.0" cy="304.0" r="14" fill="#1f2937"/>
+<text x="1719.0" y="309.0" text-anchor="middle" font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif" font-size="14" font-weight="700" fill="#fff">9</text>
+</svg>

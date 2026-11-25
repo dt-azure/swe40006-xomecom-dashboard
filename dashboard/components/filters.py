@@ -5,7 +5,7 @@ import streamlit as st
 from dashboard.data.analytics import DATA_SCOPES, sample_scope
 from dashboard.data.provider import Snapshot
 
-COMPARISONS = ["Previous year", "Previous period", "No comparison"]
+COMPARISONS = ["Previous year", "Previous period", "No"]
 
 
 def data_scope_control() -> str:

@@ -25,7 +25,7 @@ def render(report: Report) -> pd.DataFrame:
     lines = report.lines()
     currency = report.currency
     prefix = f"{currency} "
-    page_heading("Executive Overview", f"Gold warehouse sales, profit, products and customers · {currency}")
+    page_heading("Executive Overview 25/11/2026", f"Gold warehouse sales, profit, products and customers · {currency}")
     current, previous = totals(lines), totals(report.lines(previous=True))
     specs = (
         ("Net sales", "net_sales_cents", "payments"),

@@ -17,14 +17,14 @@ flowchart LR
 
 | Path | Responsibility |
 | --- | --- |
-| `dashboard/app.py` | Streamlit entry point. Registers the five views, renders the shared navigation and date toolbar, caches Gold reads, and passes the snapshot and filters to the active view. |
+| `dashboard/app.py` | Streamlit entry point. Starts the session heartbeat, registers the five views, renders the shared navigation and date toolbar, caches Gold reads, and passes the snapshot and filters to the active view. |
 | `dashboard/components/` | Shared navigation, filters, layout, number formatting, charts, velocity card, tables, CSV exports, and the per-view report context. |
 | `dashboard/data/provider.py` | Defines the provider protocol, normalized snapshot, and errors that the UI can display. |
 | `dashboard/data/postgres_provider.py` | Connects through SQLAlchemy and psycopg2, reads Gold in one repeatable-read transaction, validates types and keys, normalizes money to integer cents, and returns table counts and a read timestamp. |
 | `dashboard/data/analytics.py` | Applies the selected date range and Gold sample scope and computes sales, profitability, growth, velocity, and retention metrics. |
 | `dashboard/views/` | Builds and exports the five reports using the same snapshot and shared components. |
 | `dashboard/styles/` and `dashboard/static/fonts/` | CommercePulse styles and bundled fonts. Streamlit static serving is enabled in `.streamlit/config.toml`. |
-| `dashboard/tests/` | Unit and configuration checks plus a PostgreSQL and Streamlit integration test against the supplied snapshot. |
+| `tests/dashboard/` | Unit and Streamlit AppTest checks, plus a PostgreSQL integration test against the supplied snapshot. |
 
 The provider reads the current fact and marts into memory. Normal interactions apply filters in the dashboard rather than issuing per-widget SQL queries. The current design was verified at the supplied snapshot size. Assess memory and query latency against production volume. If needed, move limiting and aggregation into the provider as a separate change.
 
@@ -34,7 +34,7 @@ The tree shows files relevant to dashboard development and deployment. Package i
 
 ```text
 .
-├── .python-version                         # Python 3.12
+├── .python-version                         # Python 3.13
 ├── pyproject.toml                          # Python constraint and pytest settings
 ├── .dockerignore                           # Docker build context exclusions
 ├── .streamlit/config.toml                  # Runtime theme and static serving
@@ -46,16 +46,18 @@ The tree shows files relevant to dashboard development and deployment. Package i
 │   ├── GOLD_DATA_AUDIT.md                   # Gold contract and B1–B4 coverage
 │   ├── components/
 │   │   ├── charts.py, filters.py, formatting.py, layout.py
-│   │   └── navigation.py, report.py, tables.py, velocity.py
+│   │   ├── navigation.py, report.py, tables.py, velocity.py
+│   │   └── session_heartbeat.py, session_registry.py
 │   ├── data/
 │   │   └── analytics.py, postgres_provider.py, provider.py
 │   ├── views/
 │   │   └── overview.py, sales.py, categories.py, geography.py, pipeline_health.py
 │   ├── static/fonts/
-│   ├── styles/theme.css
-│   └── tests/
-│       └── test_app.py, test_data.py
-├── dashboard_serve/
+│   └── styles/theme.css
+├── tests/dashboard/
+│   ├── test_app.py, test_data.py
+│   └── test_session_heartbeat.py, test_session_registry.py
+├── dashboard_server/
 │   ├── README.md                           # Development snapshot setup
 │   ├── schema.sql                          # Gold contract reference
 │   ├── requirements.txt                    # Separate loader/export dependencies
@@ -68,7 +70,7 @@ The tree shows files relevant to dashboard development and deployment. Package i
 └── references/layout.html                  # Original design reference
 ```
 
-The runtime is `dashboard/app.py` plus its Python packages and static assets. The test files and `dashboard_serve/` tooling are for development. Production data comes from PostgreSQL. The supplied Dockerfile packages dashboard runtime files and Streamlit configuration, and excludes the loader, tests, snapshot CSVs, and customer dimension records.
+The runtime is `dashboard/app.py` plus its Python packages and static assets. The test files and `dashboard_server/` tooling are for development. Production data comes from PostgreSQL. The supplied Dockerfile packages dashboard runtime files and Streamlit configuration, and excludes the loader, tests, snapshot CSVs, and customer dimension records.
 
 ## Dashboard features
 
@@ -88,7 +90,7 @@ The marts keep their published grain and sample flag. The dashboard shows pre-ag
 
 ## Database contract
 
-Use a PostgreSQL database exposing the relations defined in [`dashboard_serve/schema.sql`](../dashboard_serve/schema.sql). All nine are read when the snapshot loads.
+Use a PostgreSQL database exposing the relations defined in [`dashboard_server/schema.sql`](../dashboard_server/schema.sql). All nine are read when the snapshot loads.
 
 | Required relation | Purpose and essential dependencies |
 | --- | --- |
@@ -127,7 +129,7 @@ These are integration test expectations for that snapshot only. Runtime figures 
 
 ## Local development setup
 
-Use **Python 3.12**. The repository's `.python-version`, `pyproject.toml` constraint (`>=3.12,<3.13`), and Docker image agree. The Project Brief §3.1 specifies Python 3.11. The team should confirm 3.12 as the shared runtime or schedule a coordinated change.
+Use **Python 3.13** for the dashboard. The repository's `.python-version`, `pyproject.toml` constraint (`>=3.13,<3.14`), and Docker image use this version. The Project Brief §3.1 specifies Python 3.11.
 
 1. Use the supplied handover checkout or clone the shared `dashboard` branch once the handover changes are available there.
 
@@ -136,15 +138,15 @@ Use **Python 3.12**. The repository's `.python-version`, `pyproject.toml` constr
    cd swe40006-xomecom-dashboard
    ```
 
-2. From the repository root, create and activate the virtual environment. Use a Python 3.12 distribution that provides `venv` and pip.
+2. From the repository root, create and activate the virtual environment. Use a Python 3.13 distribution that provides `venv` and pip.
 
    ```bash
-   python3.12 -m venv .venv
+   python3.13 -m venv .venv
    source .venv/bin/activate
    python -m pip install -r dashboard/requirements.txt
    ```
 
-3. Use an existing Gold database or follow the [development snapshot setup](../dashboard_serve/README.md) to load one into a separate local database. The loader has its own requirements and replaces the target `gold` schema. Use the dashboard's read-only connection for app verification. Replace the placeholders below with credentials valid for the target database.
+3. Use an existing Gold database or follow the [development snapshot setup](../dashboard_server/README.md) to load one into a separate local database. The loader has its own requirements and replaces the target `gold` schema. Use the dashboard's read-only connection for app verification. Replace the placeholders below with credentials valid for the target database.
 
    ```bash
    export DASHBOARD_DATABASE_URL='postgresql://dashboard_reader:URL_ENCODED_PASSWORD@127.0.0.1:5440/xom_gold'
@@ -173,7 +175,7 @@ Follow the warehouse's TLS policy for deployment. When certificate and hostname 
 
 ## Docker build and local verification
 
-Run the build from the repository root so `.` is the build context. The [Dockerfile](../deploy/dashboard.Dockerfile) uses `python:3.12-slim` and starts Streamlit as `commercepulse` (UID 10001) on container port `8501`.
+Run the build from the repository root so `.` is the build context. The [Dockerfile](../deploy/dashboard.Dockerfile) uses `python:3.13-slim` and starts Streamlit as `commercepulse` (UID 10001) on container port `8501`.
 
 ```bash
 docker build -f deploy/dashboard.Dockerfile -t commercepulse-dashboard .
@@ -209,27 +211,40 @@ HTTP 200 from `/_stcore/health` can occur even when database connectivity fails.
 
 ## Testing
 
-Run tests from the repository root with the development requirements installed. The root pytest configuration marks PostgreSQL tests as `integration`, and the dashboard tests live under `dashboard/tests/`.
+Run tests from the repository root with the development requirements installed. The root pytest configuration marks the live PostgreSQL test as `integration`.
 
 ```bash
 python -m pip install -r dashboard/requirements-dev.txt
-python -m pytest -q -m 'not integration' dashboard/tests
+python -m pytest -q -m 'not integration' tests/dashboard
 ```
 
 To include the integration test, point it at an isolated PostgreSQL database seeded with the supplied 2026-11-17 fixture. Use separate production smoke tests to verify connectivity and report behavior against changing production data.
 
 ```bash
-DASHBOARD_TEST_DATABASE_URL="$DASHBOARD_DATABASE_URL" python -m pytest -q dashboard/tests
+DASHBOARD_TEST_DATABASE_URL="$DASHBOARD_DATABASE_URL" python -m pytest -q tests/dashboard
 ```
 
 Without `DASHBOARD_TEST_DATABASE_URL`, the integration test skips. Unit and configuration tests cover formulas, scope changes, empty data, signed or zero chart inputs, navigation order, and currency and CSV handling. The integration test checks the full historical reconciliation, renders all five views in Streamlit AppTest, and verifies the category pie, market treemap, weekday split, filters and exports.
 
-After the page removal, all **16 tests passed** under Python 3.12 against the local Gold snapshot. A Chrome smoke check rendered the five pages, verified that the old route falls back to Overview, and downloaded the inventory CSV at the test instance. The rebuilt non-root container passed HTTP liveness and rendered Overview with Gold data.
+## Recently Active Streamlit Sessions
+
+The heartbeat estimates how many Streamlit sessions have been active recently, including passive readers. The shared dashboard shell records the first heartbeat immediately and uses [Streamlit's timed fragment](https://docs.streamlit.io/develop/api-reference/execution-flow/st.fragment) to refresh it about every **30 seconds** while the session remains connected. The fragment runs on all five pages and accesses only session state and the in-memory registry.
+
+- Each Streamlit session receives one random UUID. Navigation and filter changes reuse that ID. A second tab starts a separate session, and reloading can start another. One person can therefore contribute multiple sessions.
+- A session counts while its last successful heartbeat is **less than 90 seconds old**, measured with a monotonic clock. After a disconnect, future heartbeats stop. An expired entry is excluded as soon as the count is queried, even if bounded cleanup has yet to delete it.
+- Tab visibility is outside the metric. Streamlit supports custom browser components, but browser timer throttling and connection changes can delay visibility or heartbeat updates. Connected hidden tabs may still count, and the metric cannot establish whether a person is reading.
+- The registry stores only random session IDs and their last monotonic heartbeat times. Memory is local to each Streamlit process. Restarting the container clears the registry, and each replica sees only the sessions that heartbeat to it. An idle process can retain expired entries until the next write or count query.
+
+`dashboard.components.session_heartbeat.get_session_metrics()` is the internal Python interface. It returns the current process's count, the interval, the timeout, and registry availability. A failed read returns an unavailable status and a count of `None`. CommercePulse has no authenticated administrator surface for displaying this metric, so it stays internal.
+
+The Dashboard team owns the registry and metric definition. DevOps owns CloudWatch RUM and any future export of the aggregate count. In-memory session metrics are local to the app unless a controlled publisher reads the internal interface in each process and sends the count to a CloudWatch custom metric. DevOps would need to define the publishing cadence, IAM permissions, and aggregation across replicas. Publish aggregate counts only.
+
+Run the heartbeat tests with `python -m pytest -q tests/dashboard/test_session_registry.py tests/dashboard/test_session_heartbeat.py`. Registry tests use a fake monotonic clock. AppTest renders all five reports with a synthetic snapshot and checks session identity across pages and filters. To verify browser scheduling, open a local dashboard tab, leave it idle for more than 90 seconds, and observe calls to `SessionRegistry.heartbeat` with local instrumentation. Expect the same UUID about every 30 seconds with no additional shell runs, Gold loads, or chart renders.
 
 ## Data refresh and dynamic updates
 
 - Successful reads are cached in memory by connection URL for **30 seconds**, with up to two cached entries per app process. Within that window, interactions reuse the snapshot.
-- The dashboard has no automatic polling. A browser interaction or refresh after cache expiry triggers the next read. If new orders fall outside the current date filter or Gold data scope, adjust both to see them. A Gold data load under the same contract requires no dashboard code redeployment.
+- Gold data refreshes when a dashboard interaction or browser reload triggers a full run after cache expiry. If new orders fall outside the current date filter or Gold data scope, adjust both to see them. A Gold data load under the same contract requires no dashboard code redeployment.
 - **Orders through** in the header is the latest order date for the selected Gold data scope, independent of the date range. **Latest sales-line ingestion** on Pipeline Health is the maximum Gold `ingested_at` for that scope.
 - **Warehouse checked** is the UTC time when the dashboard completed its successful Gold read. It can remain unchanged while that result is cached. It does not identify when the warehouse finished an ETL run.
 - The dashboard does not read `ops.pipeline_runs`. Pipeline run history, transform status, and operational staleness alerts need an agreed telemetry contract and a separate implementation.
@@ -257,7 +272,7 @@ After the page removal, all **16 tests passed** under Python 3.12 against the lo
 - Shipment and review analytics are outside the current dashboard scope, and Gold has no source records for either.
 - Discount analysis describes observed transactions. Causal discount impact requires a comparison design and additional data. Customer analysis shows observed lifetime sales, retention and inactivity. It has no predictive churn or lifetime-value model.
 - Pipeline Health reports data coverage and read metadata. Warehouse execution history and staleness monitoring need the operations feed and an agreed freshness policy.
-- Python 3.12 is the implemented runtime. The team needs to resolve its difference with the Project Brief's Python 3.11 target.
+- Python 3.13 is the implemented runtime. The team needs to resolve its difference with the Project Brief's Python 3.11 target.
 - Production readiness depends on a working network path, TLS settings, and read-only access to all nine Gold relations.
 
 ## Ownership and workstream boundaries
@@ -275,7 +290,7 @@ After the page removal, all **16 tests passed** under Python 3.12 against the lo
 | App requests `DASHBOARD_DATABASE_URL` | Export it in the shell launching Streamlit or inject it into the running container. Restart after changing the runtime environment. |
 | PostgreSQL connection is refused | Confirm the server is running and listening on the configured IP and port. For the local fixture, check the Docker port mapping and use `5440` from the host when that is the published port. |
 | Postgres works on the host but fails from Docker | Compare the configured host with the container's network. Use the PostgreSQL service name and internal port on a shared network, or the reachable warehouse DNS name for a remote service. |
-| Gold relation is missing | Check the database name and use the [schema reference](../dashboard_serve/schema.sql) to verify all nine relations. Seed an isolated development database if needed. Ask Pipeline & Database to publish production relations. |
+| Gold relation is missing | Check the database name and use the [schema reference](../dashboard_server/schema.sql) to verify all nine relations. Seed an isolated development database if needed. Ask Pipeline & Database to publish production relations. |
 | Insufficient PostgreSQL permissions | Verify CONNECT, schema USAGE and SELECT on each relation using the actual runtime role. Check grants again after marts are rebuilt. |
 | Charts or marts are empty | Select historical rows for the supplied snapshot and choose dates in 2020–2023. Clear narrower page filters. For pre-aggregated marts, choose a range covering the complete order-date interval of the rows. |
 | New Gold rows are not visible | Wait for the 30-second cache to expire, then refresh or interact with the app. Check **Warehouse checked** and **Orders through**, and widen the current date range or change the sample scope as needed. |

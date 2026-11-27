@@ -17,6 +17,7 @@ from dashboard.components.filters import comparison_control, date_controls, pres
 from dashboard.components.layout import load_theme
 from dashboard.components.navigation import brand, sidebar
 from dashboard.components.report import Report, active_report
+from dashboard.components.session_heartbeat import refresh_session_heartbeat
 from dashboard.data.analytics import DateScope, sample_scope
 from dashboard.data.postgres_provider import PostgresProvider
 from dashboard.data.provider import DataSourceError, Snapshot
@@ -39,6 +40,7 @@ def main() -> None:
     st.set_page_config(
         page_title="CommercePulse", page_icon=":material/monitoring:", layout="wide", initial_sidebar_state="auto"
     )
+    refresh_session_heartbeat()
     load_theme()
     pages = [
         st.Page(
